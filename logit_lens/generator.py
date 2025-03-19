@@ -3,6 +3,7 @@ import nltk
 
 from model.utils import get_llava_image_features, get_llava_logits
 
+
 class LogitLens:
     def __init__(self, model, processor, tokenizer, 
                  prompt=None):
@@ -70,3 +71,18 @@ class LogitLens:
             if len(tk) > 2 and tk.isalnum() and tag in tag_set:
                 filtered_tokens.append(tk)
         return filtered_tokens
+    
+    def get_token_id(self, token):
+        ids = self.tokenizer.convert_tokens_to_ids(token)
+        return ids
+
+    def get_patch_mask(self, generated_ids, given_id):
+        mask = torch.where(torch.isin(generated_ids, given_id), 1, 0)
+        return mask
+
+    def patch_with_given_token(self, image, input_token, topk=20):
+        # need to expand token to a list, eg: sign -> [sign, signs, ▁sign, ...]
+        input_token_id = self.get_token_id(input_token) 
+        generate_ids = self.get_generated_ids(image, k=topk)
+        mask = self.get_patch_mask(generate_ids, input_token_id)
+        return mask.sum(dim=1)

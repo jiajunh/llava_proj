@@ -27,6 +27,7 @@ def test():
                                             quantization = True)
 
     img_np = get_logit_lens_test_img()
+    print(type(img_np))
     print("-"*20, "Start testing", "-"*20)
     print("Load image: ", img_np.shape)
 
@@ -38,12 +39,15 @@ def test():
     print("topk next token for each patch: ", len(next_five_token_ids), next_five_token_ids[0])
 
     next_tokens_ids = generator.get_generated_ids(img_np, topk=20)
-    most_freq_token_ids = generator.get_most_frequent_token_ids(next_tokens_ids, k=100)
+    most_freq_token_ids = generator.get_most_frequent_token_ids(next_tokens_ids, k=50)
     most_freq_tokens = generator.decode(most_freq_token_ids)
     print("Most frequent tokens ids: ", most_freq_tokens)
 
     filtered_tokens = generator.filter_tokens(most_freq_tokens)
     print("Filtered tokens: ", filtered_tokens)
+
+    mask = generator.patch_with_given_token(img_np, "▁sign", topk=50)
+    print("Patch mask: ", mask)
 
 if __name__ == "__main__":
     test()
