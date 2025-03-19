@@ -17,7 +17,7 @@ def parse_args():
 def set_up(args):
     device = "cpu"
     if torch.cuda.is_available():
-        device = "cpu"
+        device = "cuda"
     elif torch.backends.mps.is_available():
         device = "mps"
     args.device = device

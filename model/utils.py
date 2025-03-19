@@ -8,17 +8,49 @@ def load_llava(model_name_or_path,
                padding_side="left",
                quantization = True):
 
-    # quantization_config = BitsAndBytesConfig(
-    #     load_in_4bit=quantization,
-    #     bnb_4bit_compute_dtype=torch.float16
-    # )
+    quantization_config = BitsAndBytesConfig(
+        load_in_4bit=quantization,
+        bnb_4bit_compute_dtype=torch.float16
+    )
 
     model = LlavaForConditionalGeneration.from_pretrained(model_name_or_path,
                                                           device_map=device_map,
-                                                          load_in_4bit = quantization,
-                                                          torch_dtype=torch.float16)
+                                                          quantization_config=quantization_config)
     
     processor = AutoProcessor.from_pretrained(model_name_or_path)
     tokenizer = processor.tokenizer
     return model, tokenizer, processor
 
+
+def get_llava_image_features(model, processor, image):
+    inputs = processor(images=image, text="", return_tensors="pt").to(model.device, torch.float16)
+    image_features = model.get_image_features(
+        pixel_values=inputs.pixel_values,
+        vision_feature_layer=model.config.vision_feature_layer,
+        vision_feature_select_strategy=model.config.vision_feature_select_strategy
+    )
+    return image_features
+
+def get_llava_logits(image_features = None,
+                     model=None,
+                     tokenizer = None,
+                     image_token = None):
+        
+        batch, _, _ = image_features.shape
+        prompt_strings = [image_token]*batch
+        text_inputs = tokenizer(prompt_strings, return_tensors="pt")
+        input_ids = text_inputs["input_ids"]
+        
+        inputs_embeds = model.get_input_embeddings()(input_ids)
+        inputs_embeds, _, _, _ = model._merge_input_ids_with_image_features(image_features, 
+                                                                            inputs_embeds, 
+                                                                            input_ids, 
+                                                                            text_inputs.attention_mask, 
+                                                                            labels=None)
+        outputs = model.language_model(
+            # attention_mask=attention_mask,
+            # position_ids=position_ids,
+            inputs_embeds=inputs_embeds,
+        )
+        logits = outputs[0]
+        return logits
