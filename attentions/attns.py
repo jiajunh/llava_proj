@@ -83,3 +83,32 @@ class AttentionGenerator:
 
         image_atten = agg_atten[:,:,img_token_idx:img_token_idx+self.image_token_num]
         return text_atten, image_atten
+    
+    def prompt_patch_attention(self, outputs, modified_token_list, patch_idx, 
+                               select_layer=-1, select_head=-1, prompt_agg=True):
+        image_start_idx = modified_token_list.index(self.image_token)
+        prompt_agg_atten = self.get_attention_scores(outputs, token_idx=0)
+        if prompt_agg:
+            prompt_agg_atten = prompt_agg_atten.mean(dim=1, keepdims=True)
+        selected_prompt_agg_atten = prompt_agg_atten[select_layer][select_head][image_start_idx+patch_idx-1]
+        return selected_prompt_agg_atten[image_start_idx:image_start_idx+self.image_token_num].reshape((1,1,-1)).cpu()
+    
+
+    def sort_patch_index_for_token(self, image_atten,
+                                   select_layer=-1, select_head=-1):
+        # output_token_idx = self.modified_token_idx_to_output_idx(token_idx)
+        # atten_weights = self.get_attention_scores(outputs, token_idx=output_token_idx)
+        # if prompt_agg:
+        #     agg_atten = self.aggregate_attention(atten_weights, agg="avg")
+        # else:
+        #     agg_atten = self.aggregate_attention(atten_weights, agg="head")
+        # _, image_atten = self.attention_maps(agg_atten, modified_token_ids)
+
+        image_atten_for_token = image_atten[select_layer, select_head].reshape((1,1,-1))
+        image_atten_for_token_prev_layer = image_atten[select_layer-1, select_head].reshape((1,1,-1))
+        
+        _, sorted_indices = torch.sort(image_atten_for_token, dim=2, descending=True)
+        sorted_indices = sorted_indices.squeeze().numpy()
+        return sorted_indices, image_atten_for_token, image_atten_for_token_prev_layer
+
+

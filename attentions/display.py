@@ -96,6 +96,21 @@ class AttentionVisualizer:
         mixed_imgs = img * 0.5 + heatmap * 0.4
         return mixed_imgs
     
+    def get_prompt_atten_mixed_img(self, image, atten, interpolate=False, fancy=True):
+        img_np = np.asarray(image)
+        height, width, _ = img_np.shape
+        img_np = self.resize_image(img_np, (width // self.n_col * self.n_col, height // self.n_row * self.n_row))
+        img = np.float32(img_np) / 255
+        height, width, _ = img_np.shape
+
+        atten = atten.reshape((1, 1, self.n_row, self.n_col))
+        if interpolate:
+            atten = torch.nn.functional.interpolate(atten, size=(height, width), mode="bilinear").numpy()
+        else:
+            atten = torch.nn.functional.interpolate(atten, size=(height, width), mode="nearest").numpy()
+        heatmap = self.generate_heatmap(atten[0], fancy)
+        return img * 0.5 + heatmap[0] * 0.5
+    
 
     def plot_image_atten(self, image_atten, image, plot_layers=[],
                          avg=False, fancy=False):
@@ -169,5 +184,30 @@ class AttentionVisualizer:
         #                 ax[row,col].set_axis_off()
         #                 ax[row,col].set_title("Layer {}, head {}".format(layer, i), fontsize=20)
 
+    def plot_patch_attention(self, image, image_atten_for_token, image_atten_for_token_prev_layer,
+                            patch_on_image, selected_prompt_agg_atten, gen_token):
+        
+        mixed_img_full = self.get_prompt_atten_mixed_img(image, image_atten_for_token, interpolate=True)
+        mixed_img_full_prev = self.get_prompt_atten_mixed_img(image, image_atten_for_token_prev_layer, interpolate=True)
+        mixed_img = self.get_prompt_atten_mixed_img(image, selected_prompt_agg_atten, interpolate=False)
+        mixed_img_single_patch = self.get_prompt_atten_mixed_img(image, patch_on_image, interpolate=False)
 
+        fig, ax = plt.subplots(2, 2, figsize=(15, 15))
+        plt.subplots_adjust(left=0, right=1, top=1, bottom=0, wspace=0.02, hspace=0.1)
     
+        ax[0,0].imshow(mixed_img_full)
+        ax[0,0].set_axis_off()
+        ax[0,0].set_title("Attention map for token {} current layer".format(gen_token), fontsize=10)
+
+        ax[0,1].imshow(mixed_img_full_prev)
+        ax[0,1].set_axis_off()
+        ax[0,1].set_title("Attention map for token {} previous layer".format(gen_token), fontsize=10)
+
+        ax[1,0].imshow(mixed_img_single_patch)
+        ax[1,0].set_axis_off()
+        ax[1,0].set_title("Selected patch position", fontsize=10)
+
+        ax[1,1].imshow(mixed_img)
+        ax[1,1].set_axis_off()
+        ax[1,1].set_title("Patch Attentions", fontsize=10)
+        return fig
