@@ -1,9 +1,17 @@
 import argparse
 import torch
+import asyncio
 import streamlit as st
 
+import requests
+import numpy as np
+from PIL import Image
+
 from utils import get_one_image, get_file_length
-from model.utils import load_llava
+from model.utils import load_llava, get_llava_image_features
+from logit_lens.generator import LogitLens
+from logit_lens.display import LogitLensVisualizer
+
 
 def parse_args():
     parser = argparse.ArgumentParser()
@@ -29,7 +37,36 @@ def set_up(args):
                                                             device_map="auto",
                                                             padding_side="left",
                                                             quantization = args.quantization)
-    args.model.to(device)
+    
+    args.lv = LogitLensVisualizer(patch_size=14, image_size=336)
+    args.generator = LogitLens(args.model, args.processor, args.tokenizer)
+
+    
+@st.cache_data
+def get_logit_lens_test_img():
+    url = "https://www.ilankelman.org/stopsigns/australia.jpg"
+    image = Image.open(requests.get(url, stream=True).raw)
+    img_np = np.asarray(image)
+    return img_np
+
+@st.cache_data
+def logit_lens_visualize(_args, patch_topk=20, k_most_freq=100):
+    img_np = get_logit_lens_test_img()
+    filtered_tokens = None,
+    next_five_tokens = None,
+    image_features = get_llava_image_features(_args.model, _args.processor, img_np)
+    next_five_tokens = _args.generator.batch_generate(img_np)
+    next_tokens_ids = _args.generator.get_generated_ids(img_np, topk=patch_topk)
+    most_freq_token_ids = _args.generator.get_most_frequent_token_ids(next_tokens_ids, k=k_most_freq)
+    most_freq_tokens = _args.generator.decode(most_freq_token_ids)
+    filtered_tokens = _args.generator.filter_tokens(most_freq_tokens)
+    
+    return {"image": img_np,
+            "filtered_tokens": filtered_tokens,
+            "next_five_tokens": next_five_tokens,
+            }
+
+
 
 def run_streamlit(args):
     st.set_page_config(page_title="Visualization", layout="wide")
@@ -49,6 +86,49 @@ def run_streamlit(args):
 
         with choose_img_col2:
             st.image(img_np)
+
+
+    logit_lens_container = st.container()
+    with logit_lens_container:
+        st.write("Logit lens part")
+        img_col, text_col, token_on_img_col = st.columns([2,1,2])
+
+        lv_result = logit_lens_visualize(args, patch_topk=20, k_most_freq=100)
+
+        with img_col:
+            img_np = lv_result["image"]
+            st.image(img_np)
+
+        with text_col:
+            patch_topk = st.text_input(label=f"patch_topk",
+                                    value="20")
+            k_most_freq = st.text_input(label=f"k_most_freq",
+                                    value="100")
+            lv_result = logit_lens_visualize(args, 
+                                      patch_topk=int(patch_topk), 
+                                      k_most_freq=int(k_most_freq))
+            st.write(f"filtered_tokens: {lv_result['filtered_tokens']}")
+
+        with token_on_img_col:
+            selected_token = st.text_input(label=f"Choose a token",
+                                    value="▁sign")
+            
+            mask = args.generator.patch_with_given_token(lv_result["image"], selected_token, topk=50)
+
+            
+            fig = args.lv.plot_tokens_on_image(img_np, tokens=lv_result["next_five_tokens"], 
+                                    show_full_image=False, 
+                                    part_idx=0,
+                                    n_splits=4,
+                                    use_resized_img=False,
+                                    text_fontsize=14)
+            st.pyplot(fig)
+
+
+
+    
+
+    
 
 if __name__ == "__main__":
     args = parse_args()
