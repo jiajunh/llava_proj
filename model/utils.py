@@ -13,12 +13,12 @@ def load_llava(model_name_or_path,
         bnb_4bit_compute_dtype=torch.float16
     )
 
-    model = LlavaForConditionalGeneration.from_pretrained(model_name_or_path,
-                                                          device_map=device_map,
-                                                          )
     # model = LlavaForConditionalGeneration.from_pretrained(model_name_or_path,
     #                                                       device_map=device_map,
-    #                                                       quantization_config=quantization_config)
+    #                                                       )
+    model = LlavaForConditionalGeneration.from_pretrained(model_name_or_path,
+                                                          device_map=device_map,
+                                                          quantization_config=quantization_config)
 
     processor = AutoProcessor.from_pretrained(model_name_or_path)
     tokenizer = processor.tokenizer
