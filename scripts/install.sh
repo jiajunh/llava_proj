@@ -12,6 +12,7 @@ then
     # Install GPU versions
     pip install torch torchvision torchaudio
     pip install transformers==4.48.3 streamlit==1.43.2 nltk==3.9.1
+    pip install -U bitsandbytes
 
 else
     echo "No GPU detected. Installing CPU-based packages..."
