@@ -80,7 +80,7 @@ def run_streamlit(args):
         # Select image index,
         # if index = -1, randomly select one image from the folder
         # 15133: man, horse
-        num_image_files = get_file_length()
+        num_image_files = get_file_length(path=args.data_dir)
         with choose_img_col1:
             image_idx = st.text_input(label=f"Select an index from {num_image_files} images",
                                     value="15133")
