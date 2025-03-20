@@ -54,12 +54,12 @@ def logit_lens_visualize(_args, patch_topk=20, k_most_freq=100):
     img_np = get_logit_lens_test_img()
     filtered_tokens = None,
     next_five_tokens = None,
-    image_features = get_llava_image_features(_args.model, _args.processor, img_np)
-    next_five_tokens = _args.generator.batch_generate(img_np)
-    next_tokens_ids = _args.generator.get_generated_ids(img_np, topk=patch_topk)
-    most_freq_token_ids = _args.generator.get_most_frequent_token_ids(next_tokens_ids, k=k_most_freq)
-    most_freq_tokens = _args.generator.decode(most_freq_token_ids)
-    filtered_tokens = _args.generator.filter_tokens(most_freq_tokens)
+    # image_features = get_llava_image_features(_args.model, _args.processor, img_np)
+    # next_five_tokens = _args.generator.batch_generate(img_np)
+    # next_tokens_ids = _args.generator.get_generated_ids(img_np, topk=patch_topk)
+    # most_freq_token_ids = _args.generator.get_most_frequent_token_ids(next_tokens_ids, k=k_most_freq)
+    # most_freq_tokens = _args.generator.decode(most_freq_token_ids)
+    # filtered_tokens = _args.generator.filter_tokens(most_freq_tokens)
     
     return {"image": img_np,
             "filtered_tokens": filtered_tokens,
@@ -113,16 +113,15 @@ def run_streamlit(args):
             selected_token = st.text_input(label=f"Choose a token",
                                     value="▁sign")
             
-            mask = args.generator.patch_with_given_token(lv_result["image"], selected_token, topk=50)
-
+            # mask = args.generator.patch_with_given_token(lv_result["image"], selected_token, topk=50)
             
-            fig = args.lv.plot_tokens_on_image(img_np, tokens=lv_result["next_five_tokens"], 
-                                    show_full_image=False, 
-                                    part_idx=0,
-                                    n_splits=4,
-                                    use_resized_img=False,
-                                    text_fontsize=14)
-            st.pyplot(fig)
+            # fig = args.lv.plot_tokens_on_image(img_np, tokens=lv_result["next_five_tokens"], 
+            #                         show_full_image=False, 
+            #                         part_idx=0,
+            #                         n_splits=4,
+            #                         use_resized_img=False,
+            #                         text_fontsize=14)
+            # st.pyplot(fig)
 
 
 
