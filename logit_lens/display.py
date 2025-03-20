@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 from PIL import Image
 
 class LogitLensVisualizer:
-    def __init__(self, patch_size, image_size):
+    def __init__(self, patch_size=14, image_size=336):
         self.patch_size = patch_size
         self.image_size = image_size
         self.dpi = 100
@@ -72,7 +72,7 @@ class LogitLensVisualizer:
                                  fontsize=text_fontsize, 
                                  color=text_color, 
                                  weight='bold')
-        plt.savefig(f"plots/tokens_on_image_{part_idx}_{n_splits}.png")
+        # plt.savefig(f"plots/tokens_on_image_{part_idx}_{n_splits}.png")
         return fig
 
     def plot_saliency_map(self, image, mask):
@@ -94,5 +94,5 @@ class LogitLensVisualizer:
         ax.imshow(mask2*255, cmap=cmap, alpha=0.6)
         ax.set_axis_off()
 
-        plt.savefig(f"plots/logit_lens_saliency_map.png")
+        # plt.savefig(f"plots/logit_lens_saliency_map.png")
         return fig

@@ -54,3 +54,16 @@ def get_llava_logits(image_features = None,
         )
         logits = outputs[0]
         return logits
+
+def get_llava_inputs_outputs(image, model, processor, prompt=None, generate_config=None):
+    prompt = "USER: <image>\n describe the image ASSISTANT:" if prompt is None else prompt
+    if generate_config is None:
+        generate_config = {
+            "return_dict_in_generate": True,
+            "output_attentions": True,
+            "output_hidden_states": True,
+        }
+    inputs = processor(images=image, text=prompt, return_tensors="pt").to(model.device, torch.float16)
+    input_kwargs = {**inputs, **generate_config}
+    outputs = model.generate(**input_kwargs)
+    return inputs, outputs
