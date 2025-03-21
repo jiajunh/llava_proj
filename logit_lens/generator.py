@@ -90,9 +90,9 @@ class LogitLens:
         print("!!!!!!", input_token, expanded_tokens)
 
         generate_ids = self.get_generated_ids(image, topk=topk)
-        mask = torch.zeros(generate_ids.shape)
+        mask = torch.zeros(generate_ids.shape).cpu()
         for token in expanded_tokens:
             input_token_id = self.get_token_id(token) 
-            mask1 = self.get_patch_mask(generate_ids, input_token_id)
+            mask1 = self.get_patch_mask(generate_ids, input_token_id).cpu()
             mask = torch.logical_or(mask, mask1).int()
         return mask.sum(dim=1)
