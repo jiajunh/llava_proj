@@ -270,9 +270,7 @@ def st_attention_maps(args):
                         st.write(f"{sorted_indices[0:50]}")
 
                         selected_patch_idx = st.text_input(label=f"select a patch index", value="").strip()
-                        print("!!!!!!!", selected_patch_idx)
                         if selected_patch_idx:
-                            print("!!!!!!!!!", selected_patch_idx)
                             st.session_state["selected_patch_idx"] = int(selected_patch_idx)
 
         with patch_atten_col:
@@ -280,7 +278,7 @@ def st_attention_maps(args):
                 st.write("no data")
             else:
                 patch_on_image = torch.zeros((1,1,576))
-                patch_on_image[0, 0, selected_patch_idx] = 1.0
+                patch_on_image[0, 0, st.session_state["selected_patch_idx"]] = 1.0
                 selected_prompt_agg_atten = args.ag.prompt_patch_attention(
                     st.session_state["outputs"], 
                     st.session_state["modified_token_list"], 
