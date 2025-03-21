@@ -129,8 +129,7 @@ def st_logit_lens_container(args):
                 st.pyplot(fig)
 
         with salicy_map_col:
-            print("salicy_map", st.session_state["selected_token"])
-            if st.session_state["selected_token"]:
+            if not st.session_state["selected_token"]:
                 st.write("No data")
             else:
                 mask = args.generator.patch_with_given_token(image=st.session_state["img_np"],
