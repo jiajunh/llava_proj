@@ -241,6 +241,7 @@ def st_attention_maps(args):
                             st.pyplot(fig)
 
 
+
         print("-"*10, "Run patch attention fragment", "-"*10)
         patch_text_col, patch_atten_col = st.columns([1,3])
         st.header("Patch attentions")
@@ -264,10 +265,10 @@ def st_attention_maps(args):
                         st.session_state["image_atten_for_token"] = image_atten_for_token
                         st.session_state["image_atten_for_token_prev_layer"] = image_atten_for_token_prev_layer
 
-                    st.write(f"Show patch index with highest attention values (ordered)")
-                    st.write(f"{sorted_indices}")
-                    selected_patch_idx = int(st.text_input(label=f"select a patch index", value="566").strip())
-                    st.session_state["selected_patch_idx"] = selected_patch_idx
+                        st.write(f"Show patch index with highest attention values (ordered)")
+                        st.write(f"{sorted_indices}")
+                        selected_patch_idx = int(st.text_input(label=f"select a patch index", value="566").strip())
+                        st.session_state["selected_patch_idx"] = selected_patch_idx
 
         with patch_atten_col:
             if "selected_patch_idx" not in st.session_state:
