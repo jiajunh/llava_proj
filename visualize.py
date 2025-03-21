@@ -1,10 +1,10 @@
 import argparse
 import torch
-import asyncio
 import streamlit as st
 
 import requests
 import numpy as np
+import matplotlib.pyplot as plt
 from PIL import Image
 
 from utils import get_one_image, get_file_length
@@ -30,7 +30,6 @@ def set_up(args):
         device = "mps"
     args.device = device
 
-    # args.data_dir = "datasets/mini_coco_2014/Images/"
     args.data_dir = "/kaggle/input/mini-coco2014-dataset-for-image-captioning/Images/"
 
     if args.device != "cuda":
@@ -52,29 +51,28 @@ def get_logit_lens_test_img():
     img_np = np.asarray(image)
     return img_np
 
-@st.cache_data
-def logit_lens_visualize(_args, patch_topk=20, k_most_freq=100):
-    img_np = get_logit_lens_test_img()
+
+def logit_lens_visualize(args, patch_topk=20, k_most_freq=100):
+    img_np = st.session_state["img_np"]
     filtered_tokens = None,
     next_five_tokens = None,
-    # image_features = get_llava_image_features(_args.model, _args.processor, img_np)
-    # next_five_tokens = _args.generator.batch_generate(img_np)
-    # next_tokens_ids = _args.generator.get_generated_ids(img_np, topk=patch_topk)
-    # most_freq_token_ids = _args.generator.get_most_frequent_token_ids(next_tokens_ids, k=k_most_freq)
-    # most_freq_tokens = _args.generator.decode(most_freq_token_ids)
-    # filtered_tokens = _args.generator.filter_tokens(most_freq_tokens)
-    
-    return {"image": img_np,
-            "filtered_tokens": filtered_tokens,
-            "next_five_tokens": next_five_tokens,
-            }
+    image_features = get_llava_image_features(args.model, args.processor, img_np)
+    next_five_tokens = args.generator.batch_generate(img_np)
+    next_tokens_ids = args.generator.get_generated_ids(img_np, topk=patch_topk)
+    most_freq_token_ids = args.generator.get_most_frequent_token_ids(next_tokens_ids, k=k_most_freq)
+    most_freq_tokens = args.generator.decode(most_freq_token_ids)
+    filtered_tokens = args.generator.filter_tokens(most_freq_tokens)
+
+    st.session_state["image_features"] = image_features
+    st.session_state["filtered_tokens"] = filtered_tokens
+    st.session_state["next_five_tokens"] = next_five_tokens
 
 
-
-def run_streamlit(args):
-    st.set_page_config(page_title="Visualization", layout="wide")
-
+@st.fragment
+def st_select_image_container(args):
+    print("-"*10, "Run select image fragment", "-"*10)
     choose_img_container = st.container()
+    choose_img_container.header("Choose image")
     with choose_img_container:
         choose_img_col1, _, choose_img_col2 = st.columns([2,1,3])
         # Select image index,
@@ -85,46 +83,69 @@ def run_streamlit(args):
             image_idx = st.text_input(label=f"Select an index from {num_image_files} images",
                                     value="15133")
             img_np = get_one_image(idx=int(image_idx), image_path=args.data_dir)
+            st.session_state["img_np"] = img_np
+            st.session_state["img_idx"] = image_idx
             st.write(f"Select index {image_idx} from {num_image_files} images")
-
         with choose_img_col2:
-            st.image(img_np)
+            st.image(st.session_state["img_np"])
 
 
+@st.fragment
+def st_logit_lens_container(args):
+    print("-"*10, "Run logit lens fragment", "-"*10)
     logit_lens_container = st.container()
+    logit_lens_container.header("Logit lens")
     with logit_lens_container:
-        st.write("Logit lens part")
-        img_col, text_col, token_on_img_col = st.columns([2,1,2])
+        input_col, token_on_img_col, salicy_map_col = st.columns([1,2,2])
 
-        lv_result = logit_lens_visualize(args, patch_topk=20, k_most_freq=100)
+        with input_col:
+            with st.form("logit lens inputs"):
+                patch_topk = st.text_input(label=f"patch_topk", value="20")
+                k_most_freq = st.text_input(label=f"k_most_freq", value="100")
 
-        with img_col:
-            img_np = lv_result["image"]
-            st.image(img_np)
+                freq_token_submitted = st.form_submit_button("freq tokens")
+                if freq_token_submitted:
+                    logit_lens_visualize(args, patch_topk=int(patch_topk), k_most_freq=int(k_most_freq))
+                
+                if "filtered_tokens" in st.session_state:
+                    st.write(f"filtered_tokens: {st.session_state['filtered_tokens']}")
+                else:
+                    st.write("filtered_tokens: None")
 
-        with text_col:
-            patch_topk = st.text_input(label=f"patch_topk",
-                                    value="20")
-            k_most_freq = st.text_input(label=f"k_most_freq",
-                                    value="100")
-            lv_result = logit_lens_visualize(args, 
-                                      patch_topk=int(patch_topk), 
-                                      k_most_freq=int(k_most_freq))
-            st.write(f"filtered_tokens: {lv_result['filtered_tokens']}")
-
+                selected_token = st.text_input(label=f"Choose a token", value="")
+                st.session_state["selected_token"] = selected_token
+            
         with token_on_img_col:
-            selected_token = st.text_input(label=f"Choose a token",
-                                    value="▁sign")
-            
-            # mask = args.generator.patch_with_given_token(lv_result["image"], selected_token, topk=50)
-            
-            # fig = args.lv.plot_tokens_on_image(img_np, tokens=lv_result["next_five_tokens"], 
-            #                         show_full_image=False, 
-            #                         part_idx=0,
-            #                         n_splits=4,
-            #                         use_resized_img=False,
-            #                         text_fontsize=14)
-            # st.pyplot(fig)
+            if not "filtered_tokens" in st.session_state:
+                st.write("No data")
+            else:
+                fig = args.lv.plot_tokens_on_image(image=st.session_state["img_np"], 
+                                             tokens=st.session_state["next_five_tokens"], 
+                                             show_full_image=False, 
+                                             part_idx=0,
+                                             n_splits=4,
+                                             use_resized_img=False,
+                                             text_fontsize=14)
+
+        with salicy_map_col:
+            if st.session_state["selected_token"]:
+                st.write("No data")
+            else:
+                mask = args.generator.patch_with_given_token(image=st.session_state["img_np"],
+                                                            input_token=st.session_state["selected_token"], 
+                                                            topk=50)
+                fig = args.lv.plot_saliency_map(image=st.session_state["img_np"], 
+                                                mask=mask)
+                st.pyplot(fig)
+
+
+
+def run_streamlit(args):
+    st.set_page_config(page_title="Visualization", layout="wide")
+    # Load image part
+    st_select_image_container(args)
+    # Logit lens part
+    st_logit_lens_container(args)
 
 
 

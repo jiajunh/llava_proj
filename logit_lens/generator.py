@@ -82,7 +82,16 @@ class LogitLens:
 
     def patch_with_given_token(self, image, input_token, topk=20):
         # need to expand token to a list, eg: sign -> [sign, signs, ▁sign, ...]
-        input_token_id = self.get_token_id(input_token) 
+        expanded_tokens = [input_token]
+        if input_token[0] == "▁" and len(input_token) > 1:
+            expanded_tokens.append(input_token[1:])
+        if input_token[0] != "▁":
+            expanded_tokens.append("▁" + input_token)
+
         generate_ids = self.get_generated_ids(image, k=topk)
-        mask = self.get_patch_mask(generate_ids, input_token_id)
+        mask = torch.zeros(generate_ids.shape)
+        for token in expanded_tokens:
+            input_token_id = self.get_token_id(token) 
+            mask1 = self.get_patch_mask(generate_ids, input_token_id)
+            mask = torch.logical_or(mask, mask1).int()
         return mask.sum(dim=1)
