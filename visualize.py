@@ -197,41 +197,44 @@ def st_attention_maps(args):
         with attention_map_col:
             matched_token_id_list = args.ag.get_selected_token_idx(st.session_state["modified_token_list"], 
                                                                    st.session_state["selected_atten_map_token"])
-            output_token_idx = args.ag.modified_token_idx_to_output_idx(matched_token_id_list[0])
-            atten_weights = args.ag.get_attention_scores(st.session_state["outputs"], 
-                                                         token_idx=output_token_idx)
-            
-            with st.form("attention map settings"):
+            if len(matched_token_id_list) == 0:
+                st.write("no data")
+            else:
+                output_token_idx = args.ag.modified_token_idx_to_output_idx(matched_token_id_list[0])
+                atten_weights = args.ag.get_attention_scores(st.session_state["outputs"], 
+                                                            token_idx=output_token_idx)
                 
-                agg_option = st.selectbox(
-                    "avg: layer avg, head: each head",
-                    ("avg", "head"),
-                    index=None,
-                    placeholder="Select one aggregation method...",
-                )
-                layers_input = st.text_input(label=f"If choose head, select layers to plot", value="-1")
-                plot_layers = [int(x.strip()) for x in layers_input.split(",")]
+                with st.form("attention map settings"):
+                    
+                    agg_option = st.selectbox(
+                        "avg: layer avg, head: each head",
+                        ("avg", "head"),
+                        index=None,
+                        placeholder="Select one aggregation method...",
+                    )
+                    layers_input = st.text_input(label=f"If choose head, select layers to plot", value="-1")
+                    plot_layers = [int(x.strip()) for x in layers_input.split(",")]
 
-                atten_map_submitted = st.form_submit_button("atten maps")
+                    atten_map_submitted = st.form_submit_button("atten maps")
 
-                if atten_map_submitted:
-                    if agg_option is None:
-                        st.write("No data")
-                        
-                    elif agg_option == "avg":
-                        agg_atten_avg = args.ag.aggregate_attention(atten_weights, agg="avg")
-                        text_atten, image_atten = args.ag.attention_maps(agg_atten_avg, 
-                                                                         st.session_state["modified_token_ids"])
-                        fig = args.vis.plot_image_atten(image_atten, st.session_state["img_np"], avg=True, fancy=False)
-                        st.pyplot(fig)
+                    if atten_map_submitted:
+                        if agg_option is None:
+                            st.write("No data")
+                            
+                        elif agg_option == "avg":
+                            agg_atten_avg = args.ag.aggregate_attention(atten_weights, agg="avg")
+                            text_atten, image_atten = args.ag.attention_maps(agg_atten_avg, 
+                                                                            st.session_state["modified_token_ids"])
+                            fig = args.vis.plot_image_atten(image_atten, st.session_state["img_np"], avg=True, fancy=False)
+                            st.pyplot(fig)
 
-                    elif agg_option == "head":
-                        agg_atten_head = args.ag.aggregate_attention(atten_weights, agg="head")
-                        text_atten, image_atten = args.ag.attention_maps(agg_atten_head, 
-                                                                         st.session_state["modified_token_ids"])
-                        fig = args.vis.plot_image_atten(image_atten, st.session_state["img_np"], 
-                                                        plot_layers=plot_layers, avg=False, fancy=True)
-                        st.pyplot(fig)
+                        elif agg_option == "head":
+                            agg_atten_head = args.ag.aggregate_attention(atten_weights, agg="head")
+                            text_atten, image_atten = args.ag.attention_maps(agg_atten_head, 
+                                                                            st.session_state["modified_token_ids"])
+                            fig = args.vis.plot_image_atten(image_atten, st.session_state["img_np"], 
+                                                            plot_layers=plot_layers, avg=False, fancy=True)
+                            st.pyplot(fig)
 
         print("-"*10, "Run patch attention fragment", "-"*10)
         patch_text_col, patch_atten_col = st.columns([1,3])
