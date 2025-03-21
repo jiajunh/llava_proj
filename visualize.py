@@ -225,6 +225,8 @@ def st_attention_maps(args):
                             agg_atten_avg = args.ag.aggregate_attention(atten_weights, agg="avg")
                             text_atten, image_atten = args.ag.attention_maps(agg_atten_avg, 
                                                                             st.session_state["modified_token_ids"])
+                            st.session_state["image_atten"] = image_atten
+                            st.session_state["agg"] = "avg"
                             fig = args.vis.plot_image_atten(image_atten, st.session_state["img_np"], avg=True, fancy=False)
                             st.pyplot(fig)
 
@@ -232,55 +234,53 @@ def st_attention_maps(args):
                             agg_atten_head = args.ag.aggregate_attention(atten_weights, agg="head")
                             text_atten, image_atten = args.ag.attention_maps(agg_atten_head, 
                                                                             st.session_state["modified_token_ids"])
+                            st.session_state["image_atten"] = image_atten
+                            st.session_state["agg"] = "head"
                             fig = args.vis.plot_image_atten(image_atten, st.session_state["img_np"], 
                                                             plot_layers=plot_layers, avg=False, fancy=True)
                             st.pyplot(fig)
 
+
         print("-"*10, "Run patch attention fragment", "-"*10)
         patch_text_col, patch_atten_col = st.columns([1,3])
-        st.write("!!!!!")
-            
+        st.header("Patch attentions")
+        
+        with patch_text_col:
+            if "image_atten" not in st.session_state:
+                st.write("First plot the attention map")
+            else:
+                with st.form("patch attention settings"):
+                    st.write(f"Show patch relations with selected token {st.session_state["selected_atten_map_token"]}")
+                    
+                    select_layer = int(st.text_input(label=f"select a layer", value="-1").strip())
+                    select_head = int(st.text_input(label=f"Select heads, if use avg, set -1", value="-1").strip())
+                    patch_atten_submitted = st.form_submit_button("patch attens")
 
+                    if patch_atten_submitted:
+                        sorted_indices, image_atten_for_token, image_atten_for_token_prev_layer = args.ag.sort_patch_index_for_token(
+                            st.session_state["image_atten"],
+                            select_layer=select_layer, 
+                            select_head=select_head)
 
-@st.fragment
-def st_patch_attens(args):
-    print("-"*10, "Run patch attention fragment", "-"*10)
-    st_generate(args, st.session_state["img_np"])
+                    st.write(f"Show patch index with highest attention values (ordered)")
+                    st.write(f"{sorted_indices}")
+                    selected_patch_idx = int(st.text_input(label=f"select a patch index", value="566").strip())
+                    st.session_state["selected_patch_idx"] = selected_patch_idx
 
-    # patch_atten_container = st.container()
-    # patch_atten_container.header("Patch attention maps")
-
-    # with patch_atten_container:
-    #     text_col, patch_atten_col = st.columns([1,3])
-
-    #     with text_col:
-    #         st.write(f"Generated tokens: \n {st.session_state['modified_token_list']} \n")
-
-    #         with st.form("patch attention settings"):
-    #             selected_token = st.text_input(label=f"select a token", value="")
-    #             st.session_state["selected_patch_atten_token"] = selected_token
-
-    #             select_layer = int(st.text_input(label=f"select a layer", value="-1").strip())
-
-    #             head_input = st.text_input(label=f"Select heads, if use avg, set -1", value="-1")
-    #             select_heads = [int(x.strip()) for x in head_input.split(",")]
-
-    #             patch_atten_submitted = st.form_submit_button("patch attens")
-
-    #             if patch_atten_submitted:
-    #                 matched_token_id_list = args.ag.get_selected_token_idx(st.session_state["modified_token_list"], 
-    #                                                                        selected_token)
-    #                 output_token_idx = args.ag.modified_token_idx_to_output_idx(matched_token_id_list[0])
-    #                 atten_weights = args.ag.get_attention_scores(st.session_state["outputs"], 
-    #                                                              token_idx=output_token_idx)
-    #                 agg_atten = args.ag.aggregate_attention(atten_weights, agg="avg")
-
-    #                 text_atten, image_atten = ag.attention_maps(agg_atten, modified_token_ids)
-
-
-            
-
-    # matched_token_id_list = ag.get_selected_token_idx(modified_token_list, gen_token)
+        with patch_atten_col:
+            if "selected_patch_idx" not in st.session_state["selected_patch_idx"]:
+                st.write("no data")
+            else:
+                patch_on_image = torch.zeros((1,1,576))
+                patch_on_image[0, 0, selected_patch_idx] = 1.0
+                fig = selected_prompt_agg_atten = args.ag.prompt_patch_attention(
+                    st.session_state["outputs"], 
+                    st.session_state["modified_token_list"], 
+                    patch_idx=st.session_state["selected_patch_idx"], 
+                    select_layer=select_layer, 
+                    select_head=select_head, 
+                    prompt_agg= (st.session_state["agg"]=="avg"))
+                st.pyplot(fig)
 
 
 
