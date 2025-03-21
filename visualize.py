@@ -244,7 +244,8 @@ def st_attention_maps(args):
 
         print("-"*10, "Run patch attention fragment", "-"*10)
         patch_text_col, patch_atten_col = st.columns([1,3])
-        st.header("Patch attentions")
+        
+        st.subheader("Patch attentions")
         
         with patch_text_col:
             if "image_atten" not in st.session_state:
@@ -267,9 +268,12 @@ def st_attention_maps(args):
 
                         st.write(f"Show patch index with highest attention values (first 50 patches ordered)")
                         st.write(f"{sorted_indices[0:50]}")
-                        selected_patch_idx = st.text_input(label=f"select a patch index", value="")
-                        if len(selected_patch_idx.strip()) > 0:
-                            st.session_state["selected_patch_idx"] = int(selected_patch_idx.strip())
+
+                        selected_patch_idx = st.text_input(label=f"select a patch index", value="").strip()
+                        print("!!!!!!!", selected_patch_idx)
+                        if selected_patch_idx:
+                            print("!!!!!!!!!", selected_patch_idx)
+                            st.session_state["selected_patch_idx"] = int(selected_patch_idx)
 
         with patch_atten_col:
             if "selected_patch_idx" not in st.session_state:
