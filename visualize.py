@@ -233,8 +233,52 @@ def st_attention_maps(args):
                                                         plot_layers=plot_layers, avg=False, fancy=True)
                         st.pyplot(fig)
 
+        print("-"*10, "Run patch attention fragment", "-"*10)
+        patch_text_col, patch_atten_col = st.columns([1,3])
+        st.write("!!!!!")
             
-    
+
+
+@st.fragment
+def st_patch_attens(args):
+    print("-"*10, "Run patch attention fragment", "-"*10)
+    st_generate(args, st.session_state["img_np"])
+
+    # patch_atten_container = st.container()
+    # patch_atten_container.header("Patch attention maps")
+
+    # with patch_atten_container:
+    #     text_col, patch_atten_col = st.columns([1,3])
+
+    #     with text_col:
+    #         st.write(f"Generated tokens: \n {st.session_state['modified_token_list']} \n")
+
+    #         with st.form("patch attention settings"):
+    #             selected_token = st.text_input(label=f"select a token", value="")
+    #             st.session_state["selected_patch_atten_token"] = selected_token
+
+    #             select_layer = int(st.text_input(label=f"select a layer", value="-1").strip())
+
+    #             head_input = st.text_input(label=f"Select heads, if use avg, set -1", value="-1")
+    #             select_heads = [int(x.strip()) for x in head_input.split(",")]
+
+    #             patch_atten_submitted = st.form_submit_button("patch attens")
+
+    #             if patch_atten_submitted:
+    #                 matched_token_id_list = args.ag.get_selected_token_idx(st.session_state["modified_token_list"], 
+    #                                                                        selected_token)
+    #                 output_token_idx = args.ag.modified_token_idx_to_output_idx(matched_token_id_list[0])
+    #                 atten_weights = args.ag.get_attention_scores(st.session_state["outputs"], 
+    #                                                              token_idx=output_token_idx)
+    #                 agg_atten = args.ag.aggregate_attention(atten_weights, agg="avg")
+
+    #                 text_atten, image_atten = ag.attention_maps(agg_atten, modified_token_ids)
+
+
+            
+
+    # matched_token_id_list = ag.get_selected_token_idx(modified_token_list, gen_token)
+
 
 
 def run_streamlit(args):
@@ -245,7 +289,6 @@ def run_streamlit(args):
     st_logit_lens_container(args)
     # Attention maps
     st_attention_maps(args)
-
     
 
     
