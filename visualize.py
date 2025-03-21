@@ -250,7 +250,7 @@ def st_attention_maps(args):
                 st.write("First plot the attention map")
             else:
                 with st.form("patch attention settings"):
-                    st.write(f"Show patch relations with selected token {st.session_state["selected_atten_map_token"]}")
+                    st.write(f"Show patch relations with selected token {st.session_state['selected_atten_map_token']}")
                     
                     select_layer = int(st.text_input(label=f"select a layer", value="-1").strip())
                     select_head = int(st.text_input(label=f"Select heads, if use avg, set -1", value="-1").strip())
@@ -261,6 +261,8 @@ def st_attention_maps(args):
                             st.session_state["image_atten"],
                             select_layer=select_layer, 
                             select_head=select_head)
+                        st.session_state["image_atten_for_token"] = image_atten_for_token
+                        st.session_state["image_atten_for_token_prev_layer"] = image_atten_for_token_prev_layer
 
                     st.write(f"Show patch index with highest attention values (ordered)")
                     st.write(f"{sorted_indices}")
@@ -273,13 +275,20 @@ def st_attention_maps(args):
             else:
                 patch_on_image = torch.zeros((1,1,576))
                 patch_on_image[0, 0, selected_patch_idx] = 1.0
-                fig = selected_prompt_agg_atten = args.ag.prompt_patch_attention(
+                selected_prompt_agg_atten = args.ag.prompt_patch_attention(
                     st.session_state["outputs"], 
                     st.session_state["modified_token_list"], 
                     patch_idx=st.session_state["selected_patch_idx"], 
                     select_layer=select_layer, 
                     select_head=select_head, 
                     prompt_agg= (st.session_state["agg"]=="avg"))
+                
+                fig =args.vis.plot_patch_attention(st.session_state["img_np"], 
+                                                   st.session_state["image_atten_for_token"], 
+                                                   st.session_state["image_atten_for_token_prev_layer"],
+                                                   patch_on_image, 
+                                                   selected_prompt_agg_atten, 
+                                                   st.session_state["selected_atten_map_token"])
                 st.pyplot(fig)
 
 
