@@ -80,7 +80,7 @@ class LogitLensVisualizer:
         height, width, _ = image.shape
         n_row = self.image_size // self.patch_size
         n_col = self.image_size // self.patch_size
-        image = self.resize_image((width//self.patch_size*self.patch_size, height//self.patch_size*self.patch_size))
+        image = self.resize_image(image, (width//self.patch_size*self.patch_size, height//self.patch_size*self.patch_size))
         height, width, _ = image.shape
 
         mask = mask.cpu().numpy().reshape((n_row, n_col))
