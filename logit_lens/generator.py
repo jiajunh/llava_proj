@@ -89,7 +89,7 @@ class LogitLens:
             expanded_tokens.append("▁" + input_token)
         print("!!!!!!", input_token, expanded_tokens)
 
-        generate_ids = self.get_generated_ids(image, k=topk)
+        generate_ids = self.get_generated_ids(image, topk=topk)
         mask = torch.zeros(generate_ids.shape)
         for token in expanded_tokens:
             input_token_id = self.get_token_id(token) 
