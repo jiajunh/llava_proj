@@ -265,10 +265,11 @@ def st_attention_maps(args):
                         st.session_state["image_atten_for_token"] = image_atten_for_token
                         st.session_state["image_atten_for_token_prev_layer"] = image_atten_for_token_prev_layer
 
-                        st.write(f"Show patch index with highest attention values (ordered)")
-                        st.write(f"{sorted_indices}")
-                        selected_patch_idx = int(st.text_input(label=f"select a patch index", value="566").strip())
-                        st.session_state["selected_patch_idx"] = selected_patch_idx
+                        st.write(f"Show patch index with highest attention values (first 50 patches ordered)")
+                        st.write(f"{sorted_indices[0:50]}")
+                        selected_patch_idx = st.text_input(label=f"select a patch index", value="")
+                        if selected_patch_idx:
+                            st.session_state["selected_patch_idx"] = int(selected_patch_idx.strip())
 
         with patch_atten_col:
             if "selected_patch_idx" not in st.session_state:
