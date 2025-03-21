@@ -8,9 +8,11 @@ import matplotlib.pyplot as plt
 from PIL import Image
 
 from utils import get_one_image, get_file_length
-from model.utils import load_llava, get_llava_image_features
+from model.utils import load_llava, get_llava_image_features, get_llava_inputs_outputs
 from logit_lens.generator import LogitLens
 from logit_lens.display import LogitLensVisualizer
+from attentions.attns import AttentionGenerator
+from attentions.display import AttentionVisualizer
 
 
 def parse_args():
@@ -42,6 +44,19 @@ def set_up(args):
     
     args.lv = LogitLensVisualizer(patch_size=14, image_size=336)
     args.generator = LogitLens(args.model, args.processor, args.tokenizer)
+    args.ag = AttentionGenerator(args.model, args.processor, args.tokenizer)
+    args.vis = AttentionVisualizer(patch_size=14, image_size=336)
+
+    args.generate_config = {
+        "max_new_tokens": 50,
+        # "num_beams": 3,
+        # "early_stopping": True,
+        "do_sample": False,
+        # "top_p": 0.3,
+        "return_dict_in_generate": True,
+        "output_attentions": True,
+        "output_hidden_states": True,
+    }
 
     
 @st.cache_data
@@ -139,6 +154,40 @@ def st_logit_lens_container(args):
                                                 mask=mask)
                 st.pyplot(fig)
 
+@st.cache_data
+def st_generate(_args, img):
+    inputs, outputs = get_llava_inputs_outputs(image=img, 
+                                               model=_args.model, 
+                                               processor = _args.processor, 
+                                               generate_config=_args.generate_config)
+    st.session_state["inputs"] = inputs
+    st.session_state["outputs"] = outputs
+
+@st.fragment
+def st_attention_maps(args):
+    print("-"*10, "Run attention map fragment", "-"*10)
+    st_generate(args, st.session_state["img_np"])
+
+    attention_map_container = st.container()
+    attention_map_container.header("Attention maps")
+
+    generated_sequences = args.processor.batch_decode(st.session_state["outputs"]["sequences"], 
+                                                      skip_special_tokens=True, 
+                                                      clean_up_tokenization_spaces=False)
+    modified_token_ids, modified_token_list = args.ag.decode_tokens(st.session_state["inputs"], st.session_state["outputs"])
+
+    with attention_map_container:
+        text_col, attention_map_col = st.columns([1,4])
+
+        with text_col:
+            st.write(f"Generated sequence: \n {generated_sequences} \n")
+            st.write(f"Generated tokens: \n {modified_token_list} \n")
+            
+            selected_token = st.text_input(label=f"select a token", value="")
+
+        with attention_map_col:
+            pass
+    
 
 
 def run_streamlit(args):
@@ -147,8 +196,8 @@ def run_streamlit(args):
     st_select_image_container(args)
     # Logit lens part
     st_logit_lens_container(args)
-
-
+    # Attention maps
+    st_attention_maps(args)
 
     
 
