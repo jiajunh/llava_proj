@@ -270,7 +270,7 @@ def st_attention_maps(args):
                     st.session_state["selected_patch_idx"] = selected_patch_idx
 
         with patch_atten_col:
-            if "selected_patch_idx" not in st.session_state["selected_patch_idx"]:
+            if "selected_patch_idx" not in st.session_state:
                 st.write("no data")
             else:
                 patch_on_image = torch.zeros((1,1,576))
