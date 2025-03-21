@@ -268,7 +268,7 @@ def st_attention_maps(args):
                         st.write(f"Show patch index with highest attention values (first 50 patches ordered)")
                         st.write(f"{sorted_indices[0:50]}")
                         selected_patch_idx = st.text_input(label=f"select a patch index", value="")
-                        if selected_patch_idx:
+                        if len(selected_patch_idx.strip()) > 0:
                             st.session_state["selected_patch_idx"] = int(selected_patch_idx.strip())
 
         with patch_atten_col:
