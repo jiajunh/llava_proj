@@ -125,11 +125,11 @@ def st_logit_lens_container(args):
                                              part_idx=0,
                                              n_splits=4,
                                              use_resized_img=False,
-                                             text_fontsize=14)
+                                             text_fontsize=10)
                 st.pyplot(fig)
 
         with salicy_map_col:
-            print("salicy_map", 0 if st.session_state["selected_token"] else 1)
+            print("salicy_map", st.session_state["selected_token"])
             if st.session_state["selected_token"]:
                 st.write("No data")
             else:

@@ -8,8 +8,8 @@ class LogitLensVisualizer:
         self.patch_size = patch_size
         self.image_size = image_size
         self.dpi = 100
-        self.horizontal_space = 3 # pixels
-        self.vertical_space = 3
+        self.horizontal_space = 2 # pixels
+        self.vertical_space = 2
 
     def resize_image(self, image, resized_size):
         pil_image = Image.fromarray(image)
@@ -71,7 +71,8 @@ class LogitLensVisualizer:
                     ax[i,j].text(0.1*(width//ncol), (1+k)*((height//ncol)/(len(tokens[feature_idx])+1)), s, 
                                  fontsize=text_fontsize, 
                                  color=text_color, 
-                                 weight='bold')
+                                #  weight='bold',
+                                 )
         # plt.savefig(f"plots/tokens_on_image_{part_idx}_{n_splits}.png")
         return fig
 
