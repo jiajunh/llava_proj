@@ -189,8 +189,8 @@ def st_attention_maps(args):
         text_col, attention_map_col = st.columns([1,3])
 
         with text_col:
-            st.write(f"Generated sequence: \n {st.session_state["generated_sequences"]} \n")
-            st.write(f"Generated tokens: \n {st.session_state["modified_token_list"]} \n")
+            st.write(f"Generated sequence: \n {st.session_state['generated_sequences']} \n")
+            st.write(f"Generated tokens: \n {st.session_state['modified_token_list']} \n")
             selected_token = st.text_input(label=f"select a token", value="")
             st.session_state["selected_atten_map_token"] = selected_token
 
