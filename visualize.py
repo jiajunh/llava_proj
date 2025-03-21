@@ -128,7 +128,7 @@ def st_logit_lens_container(args):
                     st.write("filtered_tokens: None")
 
                 selected_token = st.text_input(label=f"Choose a token", value="")
-                st.session_state["selected_token"] = selected_token
+                st.session_state["selected_logit_lens_token"] = selected_token
             
         with token_on_img_col:
             if not "filtered_tokens" in st.session_state:
@@ -144,15 +144,16 @@ def st_logit_lens_container(args):
                 st.pyplot(fig)
 
         with salicy_map_col:
-            if not st.session_state["selected_token"]:
+            if not st.session_state["selected_logit_lens_token"]:
                 st.write("No data")
             else:
                 mask = args.generator.patch_with_given_token(image=st.session_state["img_np"],
-                                                            input_token=st.session_state["selected_token"], 
+                                                            input_token=st.session_state["selected_logit_lens_token"], 
                                                             topk=50)
                 fig = args.lv.plot_saliency_map(image=st.session_state["img_np"], 
                                                 mask=mask)
                 st.pyplot(fig)
+
 
 @st.cache_data
 def st_generate(_args, img):
@@ -160,8 +161,20 @@ def st_generate(_args, img):
                                                model=_args.model, 
                                                processor = _args.processor, 
                                                generate_config=_args.generate_config)
+    
+    generated_sequences = args.processor.batch_decode(outputs["sequences"], 
+                                                      skip_special_tokens=True, 
+                                                      clean_up_tokenization_spaces=False)
+    modified_token_ids, modified_token_list = args.ag.decode_tokens(inputs, outputs)    
+    prompt_agg_atten = _args.ag.get_attention_scores(outputs, token_idx=0)
+
     st.session_state["inputs"] = inputs
     st.session_state["outputs"] = outputs
+    st.session_state["generated_sequences"] = generated_sequences
+    st.session_state["modified_token_ids"] = modified_token_ids
+    st.session_state["modified_token_list"] = modified_token_list
+    st.session_state["prompt_agg_atten"] = prompt_agg_atten
+
 
 @st.fragment
 def st_attention_maps(args):
@@ -171,22 +184,56 @@ def st_attention_maps(args):
     attention_map_container = st.container()
     attention_map_container.header("Attention maps")
 
-    generated_sequences = args.processor.batch_decode(st.session_state["outputs"]["sequences"], 
-                                                      skip_special_tokens=True, 
-                                                      clean_up_tokenization_spaces=False)
-    modified_token_ids, modified_token_list = args.ag.decode_tokens(st.session_state["inputs"], st.session_state["outputs"])
-
+    
     with attention_map_container:
-        text_col, attention_map_col = st.columns([1,4])
+        text_col, attention_map_col = st.columns([1,3])
 
         with text_col:
-            st.write(f"Generated sequence: \n {generated_sequences} \n")
-            st.write(f"Generated tokens: \n {modified_token_list} \n")
-            
+            st.write(f"Generated sequence: \n {st.session_state["generated_sequences"]} \n")
+            st.write(f"Generated tokens: \n {st.session_state["modified_token_list"]} \n")
             selected_token = st.text_input(label=f"select a token", value="")
+            st.session_state["selected_atten_map_token"] = selected_token
 
         with attention_map_col:
-            pass
+            matched_token_id_list = args.ag.get_selected_token_idx(st.session_state["modified_token_list"], 
+                                                                   st.session_state["selected_atten_map_token"])
+            output_token_idx = args.ag.modified_token_idx_to_output_idx(matched_token_id_list[0])
+            atten_weights = args.ag.get_attention_scores(st.session_state["outputs"], 
+                                                         token_idx=output_token_idx)
+            
+            with st.form("attention map settings"):
+                
+                agg_option = st.selectbox(
+                    "avg: layer avg, head: each head",
+                    ("avg", "head"),
+                    index=None,
+                    placeholder="Select one aggregation method...",
+                )
+                layers_input = st.text_input(label=f"If choose head, select layers to plot", value="-1")
+                plot_layers = [int(x.strip()) for x in layers_input.split(",")]
+
+                atten_map_submitted = st.form_submit_button("atten maps")
+
+                if atten_map_submitted:
+                    if agg_option is None:
+                        st.write("No data")
+                        
+                    elif agg_option == "avg":
+                        agg_atten_avg = args.ag.aggregate_attention(atten_weights, agg="avg")
+                        text_atten, image_atten = args.ag.attention_maps(agg_atten_avg, 
+                                                                         st.session_state["modified_token_ids"])
+                        fig = args.vis.plot_image_atten(image_atten, st.session_state["img_np"], avg=True, fancy=False)
+                        st.pyplot(fig)
+
+                    elif agg_option == "head":
+                        agg_atten_head = args.ag.aggregate_attention(atten_weights, agg="head")
+                        text_atten, image_atten = args.ag.attention_maps(agg_atten_head, 
+                                                                         st.session_state["modified_token_ids"])
+                        fig = args.vis.plot_image_atten(image_atten, st.session_state["img_np"], 
+                                                        plot_layers=plot_layers, avg=False, fancy=True)
+                        st.pyplot(fig)
+
+            
     
 
 
