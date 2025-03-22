@@ -315,17 +315,39 @@ def get_base64_img(img):
 @st.fragment
 def st_patch_view(args):
     print("-"*10, "Run patch view fragment", "-"*10)
-    get_base64_img(st.session_state["img_np"])
 
-    # Embed the image in HTML using base64 encoding
-    html_code = f"""
-    <div class="image-container">
-        <img src="data:image/png;base64,{st.session_state["image_base64"]}" alt="Image">
-        <div class="highlight-patch"></div>
-    </div>
-    """
-    # Display the HTML and CSS in Streamlit
-    st.markdown(html_code, unsafe_allow_html=True)
+    patch_view_container = st.container()
+    patch_view_container.header("Patch attention view")
+    # atten_text_col, atten_plot_col = st.columns([2,5])
+
+    with patch_view_container:
+        get_base64_img(st.session_state["img_np"])
+        img_width, img_height = st.session_state["image_base64"].size
+
+        hover_style = f"""
+        <style>
+            .image-container {{
+                position: relative;
+                display: inline-block;
+            }}
+
+            .image-container img {{
+                width: {img_width}px;
+                height: {img_height}px;
+            }}
+
+        </style>
+        """
+
+        html_code = f"""
+        <div class="image-container">
+            <img src="data:image/png;base64,{st.session_state["image_base64"]}" alt="Image">
+            <div class="highlight-patch"></div>
+        </div>
+        """
+        # Display the HTML and CSS in Streamlit
+        st.markdown(hover_style, unsafe_allow_html=True)
+        st.markdown(html_code, unsafe_allow_html=True)
 
 
 

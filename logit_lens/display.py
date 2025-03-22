@@ -23,7 +23,7 @@ class LogitLensVisualizer:
                              n_splits=3,
                              use_resized_img=False,
                              text_color="yellow",
-                             text_fontsize=14):
+                             text_fontsize=12):
         if not isinstance(image, np.ndarray):
             image = np.asarray(image)
         
