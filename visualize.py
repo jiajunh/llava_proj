@@ -335,7 +335,7 @@ def st_patch_view(args):
 
     patch_view_container = st.container()
     patch_view_container.header("Patch attention view")
-    _, view_col, _ = st.columns([1,3,1])
+    _, view_col, _ = st.columns([1,30,1])
 
     with patch_view_container:
         with view_col:
@@ -383,6 +383,8 @@ def st_patch_view(args):
                 {patch_divs}
             </div>
             """
+
+            print(html_code)
 
             # Display the HTML and CSS in Streamlit
             st.markdown(hover_style, unsafe_allow_html=True)
