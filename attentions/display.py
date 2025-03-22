@@ -33,7 +33,7 @@ class AttentionVisualizer:
         ax[0].set_xticks(range(len(plot_decode_tokens)))
         ax[0].set_xticklabels(plot_decode_tokens, rotation=75)
         ax[0].set_title("Sum vision tokens with first token (avg over last layer heads)", fontsize=16)
-        ax[0].grid()
+        ax[0].grid(color='#EEEEEE')
         
         ax[1].scatter(range(len(plot_decode_tokens)-1),plot_attention[1:], linewidth=3, marker='x', s=80, color='r')
         ax[1].tick_params(axis='x', labelsize=12)
@@ -41,7 +41,7 @@ class AttentionVisualizer:
         ax[1].set_xticks(range(len(plot_decode_tokens)-1))
         ax[1].set_xticklabels(plot_decode_tokens[1:], rotation=75)
         ax[1].set_title("Sum vision tokens without first token (avg over last layer heads)", fontsize=16)
-        ax[1].grid()
+        ax[1].grid(color='#EEEEEE')
         return fig
     
     def plot_image_atten_for_each_token(self, atten_score, modified_token_list):
@@ -53,7 +53,7 @@ class AttentionVisualizer:
         ax.set_xticks(range(len(plot_decode_tokens)))
         ax.set_xticklabels(plot_decode_tokens, rotation=75)
         ax.set_title("image attention weights for each new token", fontsize=14)
-        ax.grid()
+        ax.grid(color='#EEEEEE')
         return fig
     
     def generate_heatmap(self, atten_map, fancy=False, mul=1.2):
@@ -210,4 +210,13 @@ class AttentionVisualizer:
         ax[1,1].imshow(mixed_img)
         ax[1,1].set_axis_off()
         ax[1,1].set_title("Patch Attentions", fontsize=10)
+        return fig
+    
+    def plot_image_atten_over_layers(self, scores):
+        fig, ax = plt.subplots(1,1, figsize=(15, 4))
+        ax.scatter(range(len(scores)),scores, linewidth=3, marker='x', s=80, color='r')
+        ax.tick_params(axis='x', labelsize=12)
+        ax.tick_params(axis='y', labelsize=12)
+        ax.set_title("image attention over layers", fontsize=16)
+        ax.grid(color='#EEEEEE')
         return fig

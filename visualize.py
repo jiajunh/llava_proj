@@ -351,6 +351,14 @@ def st_attention_analysis(args):
                     st.pyplot(fig)
 
 
+                    st.write(f"Plot image attetnions over layers")
+                    img_token_idx = args.ag.get_selected_token_idx(st.session_state["modified_token_list"], 
+                                                                   args.ag.image_token)[0]
+                    scores = text_atten[:,:,img_token_idx].cpu().numpy().squeeze()
+                    fig = args.vis.plot_image_atten_over_layers(scores)
+                    st.pyplot(fig)
+
+
 def run_streamlit(args):
     st.set_page_config(page_title="Visualization", layout="wide")
     # Load image part
