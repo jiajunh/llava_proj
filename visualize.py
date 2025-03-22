@@ -366,11 +366,11 @@ def st_patch_view(args):
                     position: absolute;
                     width: {st.session_state["resized_patch_width"]}px;
                     height: {st.session_state["resized_patch_height"]}px;
-                    display: none;
+                    background-color: transparent; /* Default state */
                 }}
 
                 .highlight-patch:hover {{
-                    background-color: rgba(0, 255, 0, 0.5);
+                    background-color: rgba(0, 255, 0, 0.5); /* Green with some transparency on hover */
                 }}
 
             </style>
