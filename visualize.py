@@ -95,7 +95,7 @@ def st_select_image_container(args):
         # 15133: man, horse
         num_image_files = get_file_length(path=args.data_dir)
         with choose_img_col1:
-            image_idx = st.text_input(label=f"Select an index from {num_image_files} images",
+            image_idx = st.text_input(label=f"Select an index from {num_image_files} images, or -1 for random",
                                     value="15133")
             img_np = get_one_image(idx=int(image_idx), image_path=args.data_dir)
             st.session_state["img_np"] = img_np
@@ -242,10 +242,17 @@ def st_attention_maps(args):
 
 
 
+        # for token_idx in matched_token_id_list:
+        #     output_token_idx = ag.modified_token_idx_to_output_idx(token_idx)
+        #     atten_weights = ag.get_attention_scores(outputs, token_idx=output_token_idx)
+        #     agg_atten = ag.aggregate_attention(atten_weights, agg="avg")
+        #     text_atten, image_atten = ag.attention_maps(agg_atten, modified_token_ids)
+        #     vis.plot_text_attention(text_atten, modified_token_list, layer=-1, head=-1)
+
         print("-"*10, "Run patch attention fragment", "-"*10)
         patch_text_col, patch_atten_col = st.columns([1,3])
         
-        st.subheader("Patch attentions")
+        attention_map_container.header("patch attention")
         
         with patch_text_col:
             if "image_atten" not in st.session_state:
