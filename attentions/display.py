@@ -138,7 +138,7 @@ class AttentionVisualizer:
                     ax[k*8+row,col].imshow(mixed_imgs[layer, i])
                     ax[k*8+row,col].set_axis_off()
                     ax[k*8+row,col].set_title("Layer {}, head {}".format(layer, i), fontsize=16)
-        plt.savefig(f"plots/image_patch_attens_layer_{"avg" if avg else "head"}.png")
+        plt.savefig(f"plots/image_patch_attens_layer_{'avg' if avg else 'head'}.png")
         return fig
     
 
