@@ -355,6 +355,8 @@ def run_streamlit(args):
     st_attention_maps(args)
     # Patch Attention 
     st_patch_attention(args)
+    # Analysis lots
+    st_attention_analysis(args)
     
 
     
