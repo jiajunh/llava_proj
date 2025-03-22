@@ -369,7 +369,7 @@ def st_patch_view(args):
                     display: none;
                 }}
 
-                .highlight-patch:hover .highlight-patch {{
+                .highlight-patch:hover {{
                     background-color: rgba(0, 255, 0, 0.5);
                 }}
 
