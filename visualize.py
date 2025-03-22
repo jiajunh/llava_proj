@@ -311,7 +311,7 @@ def st_attention_analysis(args):
 
     attention_analysis_container = st.container()
     attention_analysis_container.header("attention analysis")
-    atten_text_col, atten_plot_col = st.columns([1,3])
+    atten_text_col, atten_plot_col = st.columns([2,5])
     
     with attention_analysis_container:
 
@@ -340,9 +340,15 @@ def st_attention_analysis(args):
                         text_atten, image_atten = args.ag.attention_maps(agg_atten_avg, 
                                                                         st.session_state["modified_token_ids"])
                     
-                        fig = args.vis.plot_text_attention(text_atten, st.session_state["modified_token_ids"], layer=-1, head=-1)
+                        fig = args.vis.plot_text_attention(text_atten, st.session_state["modified_token_list"], layer=-1, head=-1)
                         st.pyplot(fig)
                 
+                    st.write(f"Plot sum of image attetnions for every generated tokens")
+                    atten_score = args.ag.get_image_atten_for_every_new_token(st.session_state["outputs"], 
+                                                                              st.session_state["modified_token_ids"])
+                    fig = args.vis.plot_image_atten_for_each_token(atten_score, 
+                                                                   st.session_state["modified_token_list"])
+                    st.pyplot(fig)
 
 
 def run_streamlit(args):
