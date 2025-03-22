@@ -319,6 +319,8 @@ def get_base64_img(_args, img):
     st.session_state["resized_patch_width"] = patch_width
     st.session_state["resized_patch_height"] = patch_height
 
+    print(height, width, patch_height, patch_width)
+
     positions = []
     for y in range(0, height, patch_height):
         for x in range(0, width, patch_width):
@@ -383,8 +385,6 @@ def st_patch_view(args):
                 {patch_divs}
             </div>
             """
-
-            print(html_code)
 
             # Display the HTML and CSS in Streamlit
             st.markdown(hover_style, unsafe_allow_html=True)
