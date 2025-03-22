@@ -307,8 +307,13 @@ def st_patch_attention(args):
 
 
 @st.cache_data
-def get_base64_img(img):
-    image_base64 = image_to_base64(img)
+def get_base64_img(_args, img):
+    height, width, _ = img.shape
+    resized_img = _args.vis.resize_image(img, (width // _args.vis.n_col * _args.vis.n_col, height // _args.vis.n_row * _args.vis.n_row))
+    height, width, _ = img.shape
+    st.session_state["resized_img_width"] = width
+    st.session_state["resized_img_height"] = height
+    image_base64 = image_to_base64(resized_img)
     st.session_state["image_base64"] = image_base64
 
 
@@ -318,11 +323,10 @@ def st_patch_view(args):
 
     patch_view_container = st.container()
     patch_view_container.header("Patch attention view")
-    # atten_text_col, atten_plot_col = st.columns([2,5])
 
     with patch_view_container:
         get_base64_img(st.session_state["img_np"])
-        img_width, img_height = st.session_state["image_base64"].size
+        
 
         hover_style = f"""
         <style>
@@ -332,8 +336,8 @@ def st_patch_view(args):
             }}
 
             .image-container img {{
-                width: {img_width}px;
-                height: {img_height}px;
+                width: {st.session_state["resized_img_width"]}px;
+                height: {st.session_state["resized_img_height"]}px;
             }}
 
         </style>
