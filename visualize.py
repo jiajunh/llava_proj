@@ -322,7 +322,7 @@ def get_base64_img(_args, img):
     positions = []
     for y in range(0, height, patch_height):
         for x in range(0, width, patch_width):
-            positions.append({x, y})
+            positions.append((x, y))
     st.session_state["patch_positions"] = positions
 
     image_base64 = image_to_base64(resized_img)
