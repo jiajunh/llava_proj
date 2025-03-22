@@ -341,14 +341,13 @@ def st_patch_view(args):
         with view_col:
             get_base64_img(args, st.session_state["img_np"])
 
-            hover_color = st.color_picker("Pick a hover color", "#EEEEEE")
             patch_divs = ""
             alpha = 0.5
 
-            for x, y in st.session_state["patch_positions"]:
+            for idx, (x, y) in enumerate(st.session_state["patch_positions"]):
                 patch_divs += f"""
-                    <div class="highlight-patch" style="top:{y}px; left:{x}px; background-color: {hover_color};"></div>
-                    """
+                <div class="highlight-patch" id="patch-{idx}" style="top:{y}px; left:{x}px; opacity:{alpha};"></div>
+                """
 
             hover_style = f"""
             <style>
