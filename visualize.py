@@ -7,7 +7,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from PIL import Image
 
-from utils import get_one_image, get_file_length
+from utils import get_one_image, get_file_length, image_to_base64
 from model.utils import load_llava, get_llava_image_features, get_llava_inputs_outputs
 from logit_lens.generator import LogitLens
 from logit_lens.display import LogitLensVisualizer
@@ -249,7 +249,7 @@ def st_patch_attention(args):
 
     patch_attention_container = st.container()
     patch_attention_container.header("patch attention")
-    patch_text_col, patch_atten_col = st.columns([1,3])
+    patch_text_col, patch_atten_col = st.columns([2,5])
     
     with patch_attention_container:
         with patch_text_col:
@@ -305,9 +305,34 @@ def st_patch_attention(args):
                 st.pyplot(fig)
 
 
+
+@st.cache_data
+def get_base64_img(img):
+    image_base64 = image_to_base64(img)
+    st.session_state["image_base64"] = image_base64
+
+
+@st.fragment
+def st_patch_view(args):
+    print("-"*10, "Run patch view fragment", "-"*10)
+    get_base64_img(st.session_state["img_np"])
+
+    # Embed the image in HTML using base64 encoding
+    html_code = f"""
+    <div class="image-container">
+        <img src="data:image/png;base64,{st.session_state["image_base64"]}" alt="Image">
+        <div class="highlight-patch"></div>
+    </div>
+    """
+
+    # Display the HTML and CSS in Streamlit
+    st.markdown(html_code, unsafe_allow_html=True)
+
+
+
 @st.fragment
 def st_attention_analysis(args):
-    print(print("-"*10, "Run attention analysis fragment", "-"*10))
+    print("-"*10, "Run attention analysis fragment", "-"*10)
 
     attention_analysis_container = st.container()
     attention_analysis_container.header("attention analysis")
@@ -369,6 +394,8 @@ def run_streamlit(args):
     st_attention_maps(args)
     # Patch Attention 
     st_patch_attention(args)
+    # Patch attention hover
+    st_patch_view(args)
     # Analysis lots
     st_attention_analysis(args)
     

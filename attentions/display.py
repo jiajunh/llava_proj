@@ -42,7 +42,8 @@ class AttentionVisualizer:
         ax[1].set_xticklabels(plot_decode_tokens[1:], rotation=75)
         ax[1].set_title("Sum vision tokens without first token (avg over last layer heads)", fontsize=16)
         ax[1].grid(color='#EEEEEE')
-        plt.savefig(f"plots/attens_generating_token.png")
+        plt.savefig(f"./plots/attens_generating_token.png")
+        print("*"*5, "./plots/attens_generating_token.png saved!")
         return fig
     
     def plot_image_atten_for_each_token(self, atten_score, modified_token_list):
@@ -55,7 +56,8 @@ class AttentionVisualizer:
         ax.set_xticklabels(plot_decode_tokens, rotation=75)
         ax.set_title("image attention weights for each new token", fontsize=14)
         ax.grid(color='#EEEEEE')
-        plt.savefig(f"plots/image_attens_for_generated_tokens.png")
+        plt.savefig(f"./plots/image_attens_for_generated_tokens.png")
+        print("*"*5, "./plots/image_attens_for_generated_tokens.png saved!")
         return fig
     
     def generate_heatmap(self, atten_map, fancy=False, mul=1.2):
@@ -63,7 +65,7 @@ class AttentionVisualizer:
         if not fancy:
             cam = (cam - np.min(cam)) / (np.max(cam) - np.min(cam))
         else:
-            heads, height, width = atten_map.shape
+            heads, _, _ = atten_map.shape
             cam = cam.reshape((heads, -1))
             cam_min = np.min(cam, axis=1, keepdims=True)
             cam_max = np.max(cam, axis=1, keepdims=True)
@@ -138,7 +140,8 @@ class AttentionVisualizer:
                     ax[k*8+row,col].imshow(mixed_imgs[layer, i])
                     ax[k*8+row,col].set_axis_off()
                     ax[k*8+row,col].set_title("Layer {}, head {}".format(layer, i), fontsize=16)
-        plt.savefig(f"plots/image_patch_attens_layer_{'avg' if avg else 'head'}.png")
+        plt.savefig(f"./plots/image_patch_attens_layer_{'avg' if avg else 'head'}.png")
+        print("*"*5, f"./plots/image_patch_attens_layer_{'avg' if avg else 'head'}.png saved!")
         return fig
     
 
@@ -213,7 +216,8 @@ class AttentionVisualizer:
         ax[1,1].imshow(mixed_img)
         ax[1,1].set_axis_off()
         ax[1,1].set_title("Patch Attentions", fontsize=10)
-        plt.savefig(f"plots/patch_attens.png")
+        plt.savefig(f"./plots/patch_attens.png")
+        print("*"*5, f"./plots/patch_attens.png saved!")
         return fig
     
     def plot_image_atten_over_layers(self, scores):
@@ -223,5 +227,6 @@ class AttentionVisualizer:
         ax.tick_params(axis='y', labelsize=12)
         ax.set_title("image attention over layers", fontsize=16)
         ax.grid(color='#EEEEEE')
-        plt.savefig(f"plots/image_attens_over_layers.png")
+        plt.savefig(f"./plots/image_attens_over_layers.png")
+        print("*"*5, f"./plots/image_attens_over_layers.png saved!")
         return fig
