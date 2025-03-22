@@ -342,10 +342,9 @@ def st_patch_view(args):
             get_base64_img(args, st.session_state["img_np"])
 
 
-            hover_intensity = st.slider("Select Hover Color Intensity", 0, 255, 100)
-            hover_color = f"rgba({hover_intensity}, 0, 0, 0.5)"
+            hover_color = st.color_picker("Pick a hover color", "#EEEEEE")
             patch_divs = ""
-            
+
             for x, y in st.session_state["patch_positions"]:
                 patch_divs += f"""
                     <div class="highlight-patch" style="top:{y}px; left:{x}px; background-color: {hover_color};"></div>
@@ -355,7 +354,8 @@ def st_patch_view(args):
             <style>
                 .image-container {{
                     position: relative;
-                    display: inline-block;
+                    display: flex;
+                    justify-content: center; /* Center the image */
                 }}
 
                 .image-container img {{
@@ -365,13 +365,14 @@ def st_patch_view(args):
 
                 .highlight-patch {{
                     position: absolute;
-                    width: {st.session_state["resized_patch_width"]}px;
-                    height: {st.session_state["resized_patch_height"]}px;
-                    display: none;
+                    width: {st.session_state["resized_img_width"]}px;
+                    height: {st.session_state["resized_img_height"]}px;
+                    background-color: transparent;
+                    transition: background-color 0.2s ease-in-out;
                 }}
 
-                .image-container:hover .highlight-patch {{
-                    display: block;
+                .highlight-patch:hover {{
+                    background-color: {hover_color};
                 }}
 
             </style>
