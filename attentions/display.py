@@ -42,6 +42,7 @@ class AttentionVisualizer:
         ax[1].set_xticklabels(plot_decode_tokens[1:], rotation=75)
         ax[1].set_title("Sum vision tokens without first token (avg over last layer heads)", fontsize=16)
         ax[1].grid(color='#EEEEEE')
+        plt.savefig(f"plots/attens_generating_token.png")
         return fig
     
     def plot_image_atten_for_each_token(self, atten_score, modified_token_list):
@@ -54,6 +55,7 @@ class AttentionVisualizer:
         ax.set_xticklabels(plot_decode_tokens, rotation=75)
         ax.set_title("image attention weights for each new token", fontsize=14)
         ax.grid(color='#EEEEEE')
+        plt.savefig(f"plots/image_attens_for_generated_tokens.png")
         return fig
     
     def generate_heatmap(self, atten_map, fancy=False, mul=1.2):
@@ -125,7 +127,6 @@ class AttentionVisualizer:
                 ax[row,col].imshow(mixed_imgs[i,0])
                 ax[row,col].set_axis_off()
                 ax[row,col].set_title("Average of Layer {}".format(i), fontsize=16)
-
         else:
             if len(plot_layers) == 0:
                 plot_layers = [-1]
@@ -137,7 +138,9 @@ class AttentionVisualizer:
                     ax[k*8+row,col].imshow(mixed_imgs[layer, i])
                     ax[k*8+row,col].set_axis_off()
                     ax[k*8+row,col].set_title("Layer {}, head {}".format(layer, i), fontsize=16)
+        plt.savefig(f"plots/image_patch_attens_layer_{"avg" if avg else "head"}.png")
         return fig
+    
 
     
 
@@ -210,6 +213,7 @@ class AttentionVisualizer:
         ax[1,1].imshow(mixed_img)
         ax[1,1].set_axis_off()
         ax[1,1].set_title("Patch Attentions", fontsize=10)
+        plt.savefig(f"plots/patch_attens.png")
         return fig
     
     def plot_image_atten_over_layers(self, scores):
@@ -219,4 +223,5 @@ class AttentionVisualizer:
         ax.tick_params(axis='y', labelsize=12)
         ax.set_title("image attention over layers", fontsize=16)
         ax.grid(color='#EEEEEE')
+        plt.savefig(f"plots/image_attens_over_layers.png")
         return fig
