@@ -324,7 +324,6 @@ def st_patch_view(args):
         <div class="highlight-patch"></div>
     </div>
     """
-
     # Display the HTML and CSS in Streamlit
     st.markdown(html_code, unsafe_allow_html=True)
 

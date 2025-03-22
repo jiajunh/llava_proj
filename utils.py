@@ -4,7 +4,7 @@ import random
 import base64
 import numpy as np
 from PIL import Image
-from typing import Optional
+from typing import Union
 
 
 def get_file_length(path="datasets/mini_coco_2014/Images/"):
@@ -24,7 +24,7 @@ def get_one_image(idx=-1,
     np_image = np.asarray(image)
     return np_image
 
-def image_to_base64(img: Optional[np.ndarray, Image.Image]):
+def image_to_base64(img: Union[np.ndarray, Image.Image]):
     if isinstance(img, np.ndarray):
         img = Image.fromarray(img)
     buffered = io.BytesIO()
