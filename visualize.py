@@ -365,24 +365,25 @@ def st_patch_view(args):
                 .highlight-patch {{
                     position: absolute;
                     width: {st.session_state["resized_patch_width"]}px;
-                    height: {st.session_state["resized_patch_width"]}px;
-                    background-color: rgba(0, 255, 0, 0);
+                    height: {st.session_state["resized_patch_height"]}px;
+                    background-color: rgba(0, 255, 0, 0); /* Default is transparent */
                     transition: background-color 0.2s ease-in-out;
                 }}
 
                 .highlight-patch:hover {{
-                    background-color: rgba(0, 255, 0, {alpha}); /* Green with transparency */
+                    background-color: rgba(0, 255, 0, 1); /* Green with full opacity on hover */
                 }}
-
             </style>
             """
 
+            # Combine HTML + CSS
             html_code = f"""
             <div class="image-container">
                 <img src="data:image/png;base64,{st.session_state["image_base64"]}" alt="Segmented Image">
                 {patch_divs}
             </div>
             """
+
             # Display the HTML and CSS in Streamlit
             st.markdown(hover_style, unsafe_allow_html=True)
             st.markdown(html_code, unsafe_allow_html=True)
