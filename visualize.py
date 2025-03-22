@@ -310,7 +310,8 @@ def st_patch_attention(args):
 def get_base64_img(_args, img):
     height, width, _ = img.shape
     resized_img = _args.vis.resize_image(img, (width // _args.vis.n_col * _args.vis.n_col, height // _args.vis.n_row * _args.vis.n_row))
-    height, width, _ = img.shape
+    height, width, _ = resized_img.shape
+
     st.session_state["resized_img_width"] = width
     st.session_state["resized_img_height"] = height
 
