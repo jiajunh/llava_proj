@@ -325,7 +325,7 @@ def st_patch_view(args):
     patch_view_container.header("Patch attention view")
 
     with patch_view_container:
-        get_base64_img(st.session_state["img_np"])
+        get_base64_img(args, st.session_state["img_np"])
         
 
         hover_style = f"""
