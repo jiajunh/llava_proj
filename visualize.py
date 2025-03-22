@@ -318,7 +318,7 @@ def st_attention_analysis(args):
         with atten_text_col:
             st.write(f"Generated sequence: \n {st.session_state['generated_sequences']} \n")
             st.write(f"Generated tokens: \n {st.session_state['modified_token_list']} \n")
-            selected_token = st.text_input(label=f"select a token", value="")
+            selected_token = st.text_input(label=f"select a token for analysis", value="")
             st.session_state["selected_atten_analysis_token"] = selected_token
 
         with atten_plot_col:
