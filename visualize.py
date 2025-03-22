@@ -344,7 +344,8 @@ def st_patch_view(args):
 
             hover_intensity = st.slider("Select Hover Color Intensity", 0, 255, 100)
             hover_color = f"rgba({hover_intensity}, 0, 0, 0.5)"
-
+            patch_divs = ""
+            
             for x, y in st.session_state["patch_positions"]:
                 patch_divs += f"""
                     <div class="highlight-patch" style="top:{y}px; left:{x}px; background-color: {hover_color};"></div>
