@@ -382,7 +382,7 @@ def st_patch_view(args):
             html_code = f"""
             <div class="image-container">
                 <img src="data:image/png;base64,{st.session_state["image_base64"]}" alt="Segmented Image">
-                {patch_divs}
+                <div class="highlight-patch" id="patch-{0}" style="top:{0}px; left:{0}px;"></div>
             </div>
             """
 
