@@ -341,7 +341,6 @@ def st_patch_view(args):
         with view_col:
             get_base64_img(args, st.session_state["img_np"])
 
-
             hover_color = st.color_picker("Pick a hover color", "#EEEEEE")
             patch_divs = ""
 
@@ -365,8 +364,8 @@ def st_patch_view(args):
 
                 .highlight-patch {{
                     position: absolute;
-                    width: {st.session_state["resized_img_width"]}px;
-                    height: {st.session_state["resized_img_height"]}px;
+                    width: {st.session_state["resized_patch_width"]}px;
+                    height: {st.session_state["resized_patch_width"]}px;
                     background-color: transparent;
                     transition: background-color 0.2s ease-in-out;
                 }}
