@@ -313,6 +313,18 @@ def get_base64_img(_args, img):
     height, width, _ = img.shape
     st.session_state["resized_img_width"] = width
     st.session_state["resized_img_height"] = height
+
+    patch_width = width // _args.vis.n_col
+    patch_height = height // _args.vis.n_row
+    st.session_state["resized_patch_width"] = patch_width
+    st.session_state["resized_patch_height"] = patch_height
+
+    positions = []
+    for y in range(0, height, patch_height):
+        for x in range(0, width, patch_width):
+            positions.append({x, y})
+    st.session_state["patch_positions"] = positions
+
     image_base64 = image_to_base64(resized_img)
     st.session_state["image_base64"] = image_base64
 
@@ -323,35 +335,56 @@ def st_patch_view(args):
 
     patch_view_container = st.container()
     patch_view_container.header("Patch attention view")
+    _, view_col, _ = st.columns([1,3,1])
 
     with patch_view_container:
-        get_base64_img(args, st.session_state["img_np"])
-        
+        with view_col:
+            get_base64_img(args, st.session_state["img_np"])
 
-        hover_style = f"""
-        <style>
-            .image-container {{
-                position: relative;
-                display: inline-block;
-            }}
 
-            .image-container img {{
-                width: {st.session_state["resized_img_width"]}px;
-                height: {st.session_state["resized_img_height"]}px;
-            }}
+            hover_intensity = st.slider("Select Hover Color Intensity", 0, 255, 100)
+            hover_color = f"rgba({hover_intensity}, 0, 0, 0.5)"
 
-        </style>
-        """
+            for x, y in st.session_state["patch_positions"]:
+                patch_divs += f"""
+                    <div class="highlight-patch" style="top:{y}px; left:{x}px; background-color: {hover_color};"></div>
+                    """
 
-        html_code = f"""
-        <div class="image-container">
-            <img src="data:image/png;base64,{st.session_state["image_base64"]}" alt="Image">
-            <div class="highlight-patch"></div>
-        </div>
-        """
-        # Display the HTML and CSS in Streamlit
-        st.markdown(hover_style, unsafe_allow_html=True)
-        st.markdown(html_code, unsafe_allow_html=True)
+            hover_style = f"""
+            <style>
+                .image-container {{
+                    position: relative;
+                    display: inline-block;
+                }}
+
+                .image-container img {{
+                    width: {st.session_state["resized_img_width"]}px;
+                    height: {st.session_state["resized_img_height"]}px;
+                }}
+
+                .highlight-patch {{
+                    position: absolute;
+                    width: {st.session_state["resized_patch_width"]}px;
+                    height: {st.session_state["resized_patch_height"]}px;
+                    display: none;
+                }}
+
+                .image-container:hover .highlight-patch {{
+                    display: block;
+                }}
+
+            </style>
+            """
+
+            html_code = f"""
+            <div class="image-container">
+                <img src="data:image/png;base64,{st.session_state["image_base64"]}" alt="Image">
+                <div class="highlight-patch"></div>
+            </div>
+            """
+            # Display the HTML and CSS in Streamlit
+            st.markdown(hover_style, unsafe_allow_html=True)
+            st.markdown(html_code, unsafe_allow_html=True)
 
 
 
