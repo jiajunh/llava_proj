@@ -32,7 +32,7 @@ class AttentionVisualizer:
         ax[0].tick_params(axis='y', labelsize=12)
         ax[0].set_xticks(range(len(plot_decode_tokens)))
         ax[0].set_xticklabels(plot_decode_tokens, rotation=75)
-        ax[0].set_title("Sum vision tokens with first token", fontsize=16)
+        ax[0].set_title("Sum vision tokens with first token (avg over last layer heads)", fontsize=16)
         ax[0].grid()
         
         ax[1].scatter(range(len(plot_decode_tokens)-1),plot_attention[1:], linewidth=3, marker='x', s=80, color='r')
@@ -40,7 +40,7 @@ class AttentionVisualizer:
         ax[1].tick_params(axis='y', labelsize=12)
         ax[1].set_xticks(range(len(plot_decode_tokens)-1))
         ax[1].set_xticklabels(plot_decode_tokens[1:], rotation=75)
-        ax[1].set_title("Sum vision tokens without first token", fontsize=16)
+        ax[1].set_title("Sum vision tokens without first token (avg over last layer heads)", fontsize=16)
         ax[1].grid()
         return fig
     

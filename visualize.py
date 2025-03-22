@@ -245,13 +245,6 @@ def st_attention_maps(args):
 
 @st.fragment
 def st_patch_attention(args):
-        # for token_idx in matched_token_id_list:
-        #     output_token_idx = ag.modified_token_idx_to_output_idx(token_idx)
-        #     atten_weights = ag.get_attention_scores(outputs, token_idx=output_token_idx)
-        #     agg_atten = ag.aggregate_attention(atten_weights, agg="avg")
-        #     text_atten, image_atten = ag.attention_maps(agg_atten, modified_token_ids)
-        #     vis.plot_text_attention(text_atten, modified_token_list, layer=-1, head=-1)
-
     print("-"*10, "Run patch attention fragment", "-"*10)
 
     patch_attention_container = st.container()
@@ -311,6 +304,45 @@ def st_patch_attention(args):
                                                    st.session_state["selected_atten_map_token"])
                 st.pyplot(fig)
 
+
+@st.fragment
+def st_attention_analysis(args):
+    print(print("-"*10, "Run attention analysis fragment", "-"*10))
+
+    attention_analysis_container = st.container()
+    attention_analysis_container.header("attention analysis")
+    atten_text_col, atten_plot_col = st.columns([1,3])
+    
+    with attention_analysis_container:
+
+        with atten_text_col:
+            st.write(f"Generated sequence: \n {st.session_state['generated_sequences']} \n")
+            st.write(f"Generated tokens: \n {st.session_state['modified_token_list']} \n")
+            selected_token = st.text_input(label=f"select a token", value="")
+            st.session_state["selected_atten_analysis_token"] = selected_token
+
+        with atten_plot_col:
+            if "selected_atten_analysis_token" not in st.session_state:
+                st.write("no data")
+            else:
+                matched_token_id_list = args.ag.get_selected_token_idx(st.session_state["modified_token_list"], 
+                                                                    st.session_state["selected_atten_analysis_token"])
+                if len(matched_token_id_list) == 0:
+                    st.write("no data")
+                else:
+                    st.write(f"Find matched token at index {matched_token_id_list}")
+                    for matched_token_id in matched_token_id_list:
+                        st.write(f"Analysis for index {matched_token_id}")
+                        output_token_idx = args.ag.modified_token_idx_to_output_idx(matched_token_id)
+                        atten_weights = args.ag.get_attention_scores(st.session_state["outputs"], 
+                                                                    token_idx=output_token_idx)
+                        agg_atten_avg = args.ag.aggregate_attention(atten_weights, agg="avg")
+                        text_atten, image_atten = args.ag.attention_maps(agg_atten_avg, 
+                                                                        st.session_state["modified_token_ids"])
+                    
+                        fig = args.vis.plot_text_attention(text_atten, st.session_state["modified_token_ids"], layer=-1, head=-1)
+                        st.pyplot(fig)
+                
 
 
 def run_streamlit(args):
