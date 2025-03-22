@@ -260,6 +260,7 @@ def st_patch_attention(args):
     
     with patch_attention_container:
         with patch_text_col:
+            st.button("refresh")
             if "image_atten" not in st.session_state:
                 st.write("First plot the attention map")
             else:
