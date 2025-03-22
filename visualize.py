@@ -346,7 +346,7 @@ def st_patch_view(args):
 
             for idx, (x, y) in enumerate(st.session_state["patch_positions"]):
                 patch_divs += f"""
-                <div class="highlight-patch" id="patch-{idx}" style="top:{y}px; left:{x}px; opacity:{alpha};"></div>
+                <div class="highlight-patch" id="patch-{idx}" style="top:{y}px; left:{x}px;"></div>
                 """
 
             hover_style = f"""
@@ -366,13 +366,15 @@ def st_patch_view(args):
                     position: absolute;
                     width: {st.session_state["resized_patch_width"]}px;
                     height: {st.session_state["resized_patch_height"]}px;
-                    background-color: rgba(0, 255, 0, 0); /* Default is transparent */
+                    background-color: rgba(0, 255, 0, 0.5);
                     transition: background-color 0.2s ease-in-out;
+                    display: none;
                 }}
 
-                .highlight-patch:hover {{
-                    background-color: rgba(0, 255, 0, 1); /* Green with full opacity on hover */
+                .image-container:hover .highlight-patch {{
+                    display: block;
                 }}
+
             </style>
             """
 
