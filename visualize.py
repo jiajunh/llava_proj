@@ -367,7 +367,7 @@ def st_patch_view(args):
                     position: absolute;
                     width: {st.session_state["resized_patch_width"]}px;
                     height: {st.session_state["resized_patch_width"]}px;
-                    background-color: transparent;
+                    background-color: rgba(0, 255, 0, 0);
                     transition: background-color 0.2s ease-in-out;
                 }}
 
@@ -380,8 +380,8 @@ def st_patch_view(args):
 
             html_code = f"""
             <div class="image-container">
-                <img src="data:image/png;base64,{st.session_state["image_base64"]}" alt="Image">
-                <div class="highlight-patch"></div>
+                <img src="data:image/png;base64,{st.session_state["image_base64"]}" alt="Segmented Image">
+                {patch_divs}
             </div>
             """
             # Display the HTML and CSS in Streamlit
