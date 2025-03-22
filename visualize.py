@@ -343,6 +343,7 @@ def st_patch_view(args):
 
             hover_color = st.color_picker("Pick a hover color", "#EEEEEE")
             patch_divs = ""
+            alpha = 0.5
 
             for x, y in st.session_state["patch_positions"]:
                 patch_divs += f"""
@@ -371,7 +372,7 @@ def st_patch_view(args):
                 }}
 
                 .highlight-patch:hover {{
-                    background-color: {hover_color};
+                    background-color: rgba(0, 255, 0, {alpha}); /* Green with transparency */
                 }}
 
             </style>
