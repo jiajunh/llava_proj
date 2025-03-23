@@ -33,7 +33,7 @@ def set_up(args):
         device = "mps"
     args.device = device
 
-    args.data_dir = "/kaggle/input/mini-coco2014-dataset-for-image-captioning/Images/"
+    # args.data_dir = "/kaggle/input/mini-coco2014-dataset-for-image-captioning/Images/"
 
     if args.device != "cuda":
         args.quantization = False
@@ -97,7 +97,7 @@ def st_select_image_container(args):
         num_image_files = get_file_length(path=args.data_dir)
         with choose_img_col1:
             image_idx = st.text_input(label=f"Select an index from {num_image_files} images, or -1 for random",
-                                    value="15133")
+                                    value="15133", autocomplete="15133")
             img_np = get_one_image(idx=int(image_idx), image_path=args.data_dir)
             st.session_state["img_np"] = img_np
             st.session_state["img_idx"] = image_idx
@@ -166,7 +166,8 @@ def st_generate(_args, img):
     generated_sequences = args.processor.batch_decode(outputs["sequences"], 
                                                       skip_special_tokens=True, 
                                                       clean_up_tokenization_spaces=False)
-    modified_token_ids, modified_token_list = args.ag.decode_tokens(inputs, outputs)    
+    modified_token_ids, modified_token_list = args.ag.decode_tokens(inputs, outputs)
+    image_start_idx = modified_token_list.index(args.ag.image_token)  
     prompt_agg_atten = _args.ag.get_attention_scores(outputs, token_idx=0)
 
     st.session_state["inputs"] = inputs
@@ -175,6 +176,7 @@ def st_generate(_args, img):
     st.session_state["modified_token_ids"] = modified_token_ids
     st.session_state["modified_token_list"] = modified_token_list
     st.session_state["prompt_agg_atten"] = prompt_agg_atten
+    st.session_state["image_start_idx"] = image_start_idx
 
 
 @st.fragment
@@ -295,7 +297,7 @@ def st_patch_attention(args):
                     select_layer=st.session_state["select_patch_layer"], 
                     select_head=st.session_state["select_patch_head"], 
                     prompt_agg= (st.session_state["agg"]=="avg"))
-                
+                                
                 fig =args.vis.plot_patch_attention(st.session_state["img_np"], 
                                                    st.session_state["image_atten_for_token"], 
                                                    st.session_state["image_atten_for_token_prev_layer"],
@@ -320,8 +322,6 @@ def get_base64_img(_args, img):
     st.session_state["resized_patch_width"] = patch_width
     st.session_state["resized_patch_height"] = patch_height
 
-    print(height, width, patch_height, patch_width)
-
     positions = []
     for y in range(0, height, patch_height):
         for x in range(0, width, patch_width):
@@ -338,56 +338,103 @@ def st_patch_view(args):
 
     patch_view_container = st.container()
     patch_view_container.header("Patch attention view")
-    _, view_col, _ = st.columns([1,30,1])
+    input_col, _, view_col = st.columns([1,1,3])
 
     with patch_view_container:
+        with input_col:
+            with st.form("patch attention view settings"):                    
+                view_layer_option = st.selectbox(
+                    "select one layer",
+                    options=[v for v in range(len(args.model.language_model.model.layers))],
+                )
+                view_head_option = st.selectbox(
+                    "select one head, or avg",
+                    options=["avg"] + [str(v) for v in range(args.model.config.text_config.num_attention_heads)],
+                )
+                patch_atten_view_submitted = st.form_submit_button("attens view")
+
+                if patch_atten_view_submitted:
+                    # st_generate(args, st.session_state["img_np"])
+                    st.session_state["prompt_agg_atten"] = torch.rand(32, 32, 591, 591)
+                    st.session_state["image_start_idx"] = 5
+
+                    prompt_agg_atten = st.session_state["prompt_agg_atten"]
+                    
+                    if view_head_option == "avg":
+                        prompt_agg_atten = st.session_state["prompt_agg_atten"].mean(dim=1, keepdims=True)
+                        view_head_option = -1
+                    
+                    cached_patch_atten_view = []
+                    for patch_idx in range(args.ag.image_token_num):
+                        patch_atten_view_temp = prompt_agg_atten[view_layer_option][int(view_head_option)][st.session_state["image_start_idx"]+patch_idx-1].squeeze().cpu().numpy()
+                        if (patch_idx > 0 and sum(patch_atten_view_temp) > 0):
+                            patch_atten_view_temp = (patch_atten_view_temp - np.min(patch_atten_view_temp)) / (np.max(patch_atten_view_temp) - np.min(patch_atten_view_temp))
+                        cached_patch_atten_view.append(patch_atten_view_temp)
+                    st.session_state["cached_patch_atten_view"] = cached_patch_atten_view
+
         with view_col:
             get_base64_img(args, st.session_state["img_np"])
 
             patch_divs = ""
-            alpha = 0.5
+            max_alpha = 0.6
 
-            for idx, (x, y) in enumerate(st.session_state["patch_positions"]):
-                patch_divs += f"""
-                <div class="highlight-patch" id="patch-{idx}" style="top:{y}px; left:{x}px;"></div>
-                """
+            if "cached_patch_atten_view" not in st.session_state:
+                st.session_state["cached_patch_atten_view"] = [np.zeros(args.ag.image_token_num) for _ in range(args.ag.image_token_num)]
+
+            test_style = f"""
+                <script>
+                    console.log('Hello from JavaScript!');
+                </script>
+            """
 
             hover_style = f"""
-            <style>
-                .image-container {{
-                    position: relative;
-                    display: flex;
-                    justify-content: center; /* Center the image */
-                }}
+                <style>
+                    .image-container {{
+                        position: relative;
+                        display: flex;
+                        justify-content: center; /* Center the image */
+                    }}
 
-                .image-container img {{
-                    width: {st.session_state["resized_img_width"]}px;
-                    height: {st.session_state["resized_img_height"]}px;
-                }}
+                    .image-container img {{
+                        width: {st.session_state["resized_img_width"] if "resized_img_width" in st.session_state else 0}px;
+                        height: {st.session_state["resized_img_height"] if "resized_img_height" in st.session_state else 0}px;
+                        position: absolute;
+                        top: 0;
+                        left: 0;
+                    }}
 
-                .highlight-patch {{
-                    position: absolute;
-                    width: {st.session_state["resized_patch_width"]}px;
-                    height: {st.session_state["resized_patch_height"]}px;
-                    background-color: transparent; /* Default state */
-                }}
+                    .highlight-patch {{
+                        position: absolute;
+                        width: {st.session_state["resized_patch_width"] if "resized_patch_width" in st.session_state else 0}px;
+                        height: {st.session_state["resized_patch_height"] if "resized_patch_height" in st.session_state else 0}px;
+                        background-color: transparent;
+                        cursor: pointer;
+                        z-index: 1;
+                    }}
 
-                .highlight-patch:hover {{
-                    background-color: rgba(0, 255, 0, 0.5); /* Green with some transparency on hover */
-                }}
-
-            </style>
+                    .highlight-patch:hover {{
+                        border: 2px solid rgba(255, 0, 0, 0.9);
+                        background-color: rgba(255, 0, 0, 0.5);
+                        z-index: 2;
+                    }}
+                </style>
             """
+
+            for idx, (x, y) in enumerate(st.session_state["patch_positions"] if "patch_positions" in st.session_state else []):
+                patch_divs += f"<div class='highlight-patch' id='patch-{idx}' style='top:{y}px; left:{x}px;'></div>"
 
             # Combine HTML + CSS
-            html_code = f"""
-            <div class="image-container">
-                <img src="data:image/png;base64,{st.session_state["image_base64"]}" alt="Segmented Image">
-                {patch_divs}
-            </div>
-            """
+            html_code = ""
+            if "image_base64" in st.session_state:
+                html_code = f"""
+                <div class="image-container">
+                    <img src="data:image/png;base64,{st.session_state["image_base64"]}" alt="Segmented Image">
+                    {patch_divs}
+                </div>
+                """
 
             # Display the HTML and CSS in Streamlit
+            st.markdown(test_style, unsafe_allow_html=True)
             st.markdown(hover_style, unsafe_allow_html=True)
             st.markdown(html_code, unsafe_allow_html=True)
 
@@ -449,18 +496,28 @@ def st_attention_analysis(args):
 
 def run_streamlit(args):
     st.set_page_config(page_title="Visualization", layout="wide")
+
     # Load image part
     st_select_image_container(args)
-    # Logit lens part
-    st_logit_lens_container(args)
-    # Attention maps
-    st_attention_maps(args)
-    # Patch Attention 
-    st_patch_attention(args)
+
+    # # Logit lens part
+    # st_logit_lens_container(args)
+
+    # # Attention maps
+    # st_attention_maps(args)
+
+    # # Patch Attention 
+    # st_patch_attention(args)
+
     # Patch attention hover
     st_patch_view(args)
-    # Analysis lots
-    st_attention_analysis(args)
+
+    # # Analysis lots
+    # st_attention_analysis(args)
+
+
+    st.markdown('##')
+    st.markdown('##')
     
 
     
