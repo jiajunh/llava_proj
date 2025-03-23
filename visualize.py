@@ -33,7 +33,7 @@ def set_up(args):
         device = "mps"
     args.device = device
 
-    # args.data_dir = "/kaggle/input/mini-coco2014-dataset-for-image-captioning/Images/"
+    args.data_dir = "/kaggle/input/mini-coco2014-dataset-for-image-captioning/Images/"
 
     if args.device != "cuda":
         args.quantization = False
