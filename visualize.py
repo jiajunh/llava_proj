@@ -378,7 +378,7 @@ def st_patch_view(args):
                         patch_atten_view_temp = patch_atten_view_temp[st.session_state["image_start_idx"]:st.session_state["image_start_idx"]+args.ag.image_token_num].numpy()
                         
                         if (patch_idx > 0 and sum(patch_atten_view_temp) > 0):
-                            patch_atten_view_temp = np.log(patch_atten_view_temp + 1e-8)
+                            patch_atten_view_temp = np.log(patch_atten_view_temp + 1e-6)
                             patch_atten_view_temp = (patch_atten_view_temp - np.min(patch_atten_view_temp)) / (np.max(patch_atten_view_temp) - np.min(patch_atten_view_temp))
                         cached_patch_atten_view.append(patch_atten_view_temp)
                     st.session_state["cached_patch_atten_view"] = cached_patch_atten_view
