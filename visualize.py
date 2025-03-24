@@ -544,20 +544,20 @@ def run_streamlit(args):
     # Load image part
     st_select_image_container(args)
 
-    # # Logit lens part
-    # st_logit_lens_container(args)
+    # Logit lens part
+    st_logit_lens_container(args)
 
-    # # Attention maps
-    # st_attention_maps(args)
+    # Attention maps
+    st_attention_maps(args)
 
-    # # Patch Attention 
-    # st_patch_attention(args)
+    # Patch Attention 
+    st_patch_attention(args)
 
     # Patch attention hover
     st_patch_view(args)
 
-    # # Analysis lots
-    # st_attention_analysis(args)
+    # Analysis lots
+    st_attention_analysis(args)
 
 
     st.markdown('##')
