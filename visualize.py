@@ -35,7 +35,7 @@ def set_up(args):
         device = "mps"
     args.device = device
 
-    args.data_dir = "/kaggle/input/mini-coco2014-dataset-for-image-captioning/Images/"
+    # args.data_dir = "/kaggle/input/mini-coco2014-dataset-for-image-captioning/Images/"
 
     if args.device != "cuda":
         args.quantization = False
@@ -358,9 +358,9 @@ def st_patch_view(args):
                 patch_atten_view_submitted = st.form_submit_button("attens view")
 
                 if patch_atten_view_submitted:
-                    st_generate(args, st.session_state["img_np"])
-                    # st.session_state["prompt_agg_atten"] = torch.rand(32, 32, 591, 591)
-                    # st.session_state["image_start_idx"] = 5
+                    # st_generate(args, st.session_state["img_np"])
+                    st.session_state["prompt_agg_atten"] = torch.rand(32, 32, 591, 591)
+                    st.session_state["image_start_idx"] = 5
 
                     prompt_agg_atten = st.session_state["prompt_agg_atten"]
                     
@@ -372,7 +372,9 @@ def st_patch_view(args):
                     for patch_idx in range(args.ag.image_token_num):
                         patch_atten_view_temp = prompt_agg_atten[view_layer_option][int(view_head_option)][st.session_state["image_start_idx"]+patch_idx-1].squeeze().cpu()
                         patch_atten_view_temp = patch_atten_view_temp[st.session_state["image_start_idx"]:st.session_state["image_start_idx"]+args.ag.image_token_num].numpy()
+                        
                         if (patch_idx > 0 and sum(patch_atten_view_temp) > 0):
+                            patch_atten_view_temp = np.log(patch_atten_view_temp + 1e-8)
                             patch_atten_view_temp = (patch_atten_view_temp - np.min(patch_atten_view_temp)) / (np.max(patch_atten_view_temp) - np.min(patch_atten_view_temp))
                         cached_patch_atten_view.append(patch_atten_view_temp)
                     st.session_state["cached_patch_atten_view"] = cached_patch_atten_view
@@ -381,12 +383,14 @@ def st_patch_view(args):
             get_base64_img(args, st.session_state["img_np"])
 
             patch_divs = ""
-            max_alpha = 0.8
+            max_alpha = 0.9
             min_alpha = 0.0
 
             if "cached_patch_atten_view" not in st.session_state:
                 st.session_state["cached_patch_atten_view"] = [np.zeros(args.ag.image_token_num) for _ in range(args.ag.image_token_num)]
-            
+            else:
+                pass
+
             js_attention_data = [[float(val) for val in row] for row in st.session_state["cached_patch_atten_view"]]
 
             for idx, (x, y) in enumerate(st.session_state["patch_positions"] if "patch_positions" in st.session_state else []):
@@ -536,20 +540,20 @@ def run_streamlit(args):
     # Load image part
     st_select_image_container(args)
 
-    # Logit lens part
-    st_logit_lens_container(args)
+    # # Logit lens part
+    # st_logit_lens_container(args)
 
-    # Attention maps
-    st_attention_maps(args)
+    # # Attention maps
+    # st_attention_maps(args)
 
-    # Patch Attention 
-    st_patch_attention(args)
+    # # Patch Attention 
+    # st_patch_attention(args)
 
     # Patch attention hover
     st_patch_view(args)
 
-    # Analysis lots
-    st_attention_analysis(args)
+    # # Analysis lots
+    # st_attention_analysis(args)
 
 
     st.markdown('##')

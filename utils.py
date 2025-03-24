@@ -39,4 +39,4 @@ def blank_heatmap_on_img(img, alpha=0.4):
     return (overlayed_img * 255).astype(np.uint8)
 
 
-
+# def 
