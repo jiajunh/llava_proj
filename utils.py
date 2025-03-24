@@ -31,7 +31,7 @@ def image_to_base64(img: Union[np.ndarray, Image.Image]):
     img.save(buffered, format="PNG")
     return base64.b64encode(buffered.getvalue()).decode()
 
-def blank_heatmap_on_img(img, alpha=0.3):
+def blank_heatmap_on_img(img, alpha=0.4):
     img = img.astype(np.float32) / 255.0
     rgb_color = np.array([0, 0, 230], dtype=np.float32) / 255
     heat_map = np.ones(img.shape) * rgb_color

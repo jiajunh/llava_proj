@@ -382,7 +382,7 @@ def st_patch_view(args):
 
             patch_divs = ""
             max_alpha = 0.8
-            min_alpha = 0.05
+            min_alpha = 0.0
 
             if "cached_patch_atten_view" not in st.session_state:
                 st.session_state["cached_patch_atten_view"] = [np.zeros(args.ag.image_token_num) for _ in range(args.ag.image_token_num)]
