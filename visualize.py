@@ -1,13 +1,15 @@
 import argparse
+import json
 import torch
 import streamlit as st
+import streamlit.components.v1 as components
 
 import requests
 import numpy as np
 import matplotlib.pyplot as plt
 from PIL import Image
 
-from utils import get_one_image, get_file_length, image_to_base64
+from utils import get_one_image, get_file_length, image_to_base64, blank_heatmap_on_img
 from model.utils import load_llava, get_llava_image_features, get_llava_inputs_outputs
 from logit_lens.generator import LogitLens
 from logit_lens.display import LogitLensVisualizer
@@ -328,7 +330,9 @@ def get_base64_img(_args, img):
             positions.append((x, y))
     st.session_state["patch_positions"] = positions
 
-    image_base64 = image_to_base64(resized_img)
+    resized_img = blank_heatmap_on_img(resized_img)
+
+    image_base64 = image_to_base64(resized_img) 
     st.session_state["image_base64"] = image_base64
 
 
@@ -345,7 +349,7 @@ def st_patch_view(args):
             with st.form("patch attention view settings"):                    
                 view_layer_option = st.selectbox(
                     "select one layer",
-                    options=[v for v in range(len(args.model.language_model.model.layers))],
+                    options=[v for v in range(len(args.model.language_model.model.layers)-1, -1, -1)],
                 )
                 view_head_option = st.selectbox(
                     "select one head, or avg",
@@ -354,9 +358,9 @@ def st_patch_view(args):
                 patch_atten_view_submitted = st.form_submit_button("attens view")
 
                 if patch_atten_view_submitted:
-                    # st_generate(args, st.session_state["img_np"])
-                    st.session_state["prompt_agg_atten"] = torch.rand(32, 32, 591, 591)
-                    st.session_state["image_start_idx"] = 5
+                    st_generate(args, st.session_state["img_np"])
+                    # st.session_state["prompt_agg_atten"] = torch.rand(32, 32, 591, 591)
+                    # st.session_state["image_start_idx"] = 5
 
                     prompt_agg_atten = st.session_state["prompt_agg_atten"]
                     
@@ -366,7 +370,8 @@ def st_patch_view(args):
                     
                     cached_patch_atten_view = []
                     for patch_idx in range(args.ag.image_token_num):
-                        patch_atten_view_temp = prompt_agg_atten[view_layer_option][int(view_head_option)][st.session_state["image_start_idx"]+patch_idx-1].squeeze().cpu().numpy()
+                        patch_atten_view_temp = prompt_agg_atten[view_layer_option][int(view_head_option)][st.session_state["image_start_idx"]+patch_idx-1].squeeze().cpu()
+                        patch_atten_view_temp = patch_atten_view_temp[st.session_state["image_start_idx"]:st.session_state["image_start_idx"]+args.ag.image_token_num].numpy()
                         if (patch_idx > 0 and sum(patch_atten_view_temp) > 0):
                             patch_atten_view_temp = (patch_atten_view_temp - np.min(patch_atten_view_temp)) / (np.max(patch_atten_view_temp) - np.min(patch_atten_view_temp))
                         cached_patch_atten_view.append(patch_atten_view_temp)
@@ -376,28 +381,32 @@ def st_patch_view(args):
             get_base64_img(args, st.session_state["img_np"])
 
             patch_divs = ""
-            max_alpha = 0.6
+            max_alpha = 0.9
 
             if "cached_patch_atten_view" not in st.session_state:
                 st.session_state["cached_patch_atten_view"] = [np.zeros(args.ag.image_token_num) for _ in range(args.ag.image_token_num)]
+            
+            js_attention_data = [[float(val) for val in row] for row in st.session_state["cached_patch_atten_view"]]
 
-            test_style = f"""
-                <script>
-                    console.log('Hello from JavaScript!');
-                </script>
-            """
+            for idx, (x, y) in enumerate(st.session_state["patch_positions"] if "patch_positions" in st.session_state else []):
+                patch_divs += f"<div class='highlight-patch' id='patch-{idx}' style='top:{y}px; left:{x}px;'></div>"
 
-            hover_style = f"""
+            html_style = f"""
+            <!DOCTYPE html>
+            <html>
+            <head>
                 <style>
                     .image-container {{
                         position: relative;
                         display: flex;
-                        justify-content: center; /* Center the image */
+                        justify-content: center;
+
                     }}
 
                     .image-container img {{
                         width: {st.session_state["resized_img_width"] if "resized_img_width" in st.session_state else 0}px;
                         height: {st.session_state["resized_img_height"] if "resized_img_height" in st.session_state else 0}px;
+                        max-width: 100%;
                         position: absolute;
                         top: 0;
                         left: 0;
@@ -408,36 +417,61 @@ def st_patch_view(args):
                         width: {st.session_state["resized_patch_width"] if "resized_patch_width" in st.session_state else 0}px;
                         height: {st.session_state["resized_patch_height"] if "resized_patch_height" in st.session_state else 0}px;
                         background-color: transparent;
-                        cursor: pointer;
                         z-index: 1;
                     }}
 
-                    .highlight-patch:hover {{
-                        border: 2px solid rgba(255, 0, 0, 0.9);
-                        background-color: rgba(255, 0, 0, 0.5);
-                        z-index: 2;
-                    }}
                 </style>
-            """
+            </head>
 
-            for idx, (x, y) in enumerate(st.session_state["patch_positions"] if "patch_positions" in st.session_state else []):
-                patch_divs += f"<div class='highlight-patch' id='patch-{idx}' style='top:{y}px; left:{x}px;'></div>"
-
-            # Combine HTML + CSS
-            html_code = ""
-            if "image_base64" in st.session_state:
-                html_code = f"""
+            <body>
                 <div class="image-container">
                     <img src="data:image/png;base64,{st.session_state["image_base64"]}" alt="Segmented Image">
                     {patch_divs}
                 </div>
-                """
 
-            # Display the HTML and CSS in Streamlit
-            st.markdown(test_style, unsafe_allow_html=True)
-            st.markdown(hover_style, unsafe_allow_html=True)
-            st.markdown(html_code, unsafe_allow_html=True)
+                <script>
+                function adjustPatchOpacity(event) {{
+                    const patches = document.querySelectorAll('.highlight-patch');
+                    const patchAttentionData = {json.dumps(js_attention_data)}
+                    const maxAlpha = {max_alpha};
 
+                    let hoveredPatchIndex = -1;
+
+                    patches.forEach((patch, index) => {{
+                        const rect = patch.getBoundingClientRect();
+                        const patchX = rect.left + rect.width / 2;
+                        const patchY = rect.top + rect.height / 2;
+
+                        if (event.clientX >= rect.left && event.clientX <= rect.right && event.clientY >= rect.top && event.clientY <= rect.bottom) {{
+                            hoveredPatchIndex = index;
+                        }}
+                    }});
+
+                    patches.forEach((patch, index) => {{
+                        if (index < hoveredPatchIndex) {{
+                            const opacity = maxAlpha * patchAttentionData[hoveredPatchIndex][index];
+                            patch.style.backgroundColor = `rgba(0, 255, 0, ${{opacity}})`;
+                            patch.style.outline = ''; 
+                        }} else if (index === hoveredPatchIndex) {{
+                            patch.style.backgroundColor = 'rgba(255, 0, 0, 0.5)';
+                            patch.style.outline = '2px solid rgba(255, 0, 0, 0.9)';
+                        }} else {{
+                            patch.style.backgroundColor = 'transparent'; 
+                            patch.style.outline = ''; 
+                        }}
+                    }});
+                }}
+
+                const imageContainer = document.querySelector('.image-container');
+                imageContainer.addEventListener('mousemove', adjustPatchOpacity);
+                </script>
+            </body>
+            </html>
+            """
+
+            components.html(html_style, height=st.session_state["resized_img_height"]+50)
+
+            
 
 
 @st.fragment
