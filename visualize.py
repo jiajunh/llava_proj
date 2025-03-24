@@ -22,6 +22,7 @@ def parse_args():
     parser.add_argument("--data_dir", default="datasets/mini_coco_2014/Images/", type=str)
     parser.add_argument("--model_name_or_path", default="llava-hf/llava-1.5-7b-hf", type=str)
     parser.add_argument("--quantization", action="store_true")
+    parser.add_argument("--local_test", default=False, type=bool)
     
     args = parser.parse_args()
     return args
@@ -35,7 +36,8 @@ def set_up(args):
         device = "mps"
     args.device = device
 
-    # args.data_dir = "/kaggle/input/mini-coco2014-dataset-for-image-captioning/Images/"
+    if not args.local_test:
+        args.data_dir = "/kaggle/input/mini-coco2014-dataset-for-image-captioning/Images/"
 
     if args.device != "cuda":
         args.quantization = False
@@ -358,9 +360,11 @@ def st_patch_view(args):
                 patch_atten_view_submitted = st.form_submit_button("attens view")
 
                 if patch_atten_view_submitted:
-                    # st_generate(args, st.session_state["img_np"])
-                    st.session_state["prompt_agg_atten"] = torch.rand(32, 32, 591, 591)
-                    st.session_state["image_start_idx"] = 5
+                    if not args.local_test:
+                        st_generate(args, st.session_state["img_np"])
+                    else:
+                        st.session_state["prompt_agg_atten"] = torch.rand(32, 32, 591, 591)
+                        st.session_state["image_start_idx"] = 5
 
                     prompt_agg_atten = st.session_state["prompt_agg_atten"]
                     

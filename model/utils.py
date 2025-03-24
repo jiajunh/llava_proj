@@ -8,17 +8,17 @@ def load_llava(model_name_or_path,
                padding_side="left",
                quantization = True):
 
-    # quantization_config = BitsAndBytesConfig(
-    #     load_in_4bit=quantization,
-    #     bnb_4bit_compute_dtype=torch.float16
-    # )
+    quantization_config = BitsAndBytesConfig(
+        load_in_4bit=quantization,
+        bnb_4bit_compute_dtype=torch.float16
+    )
     
-    # model = LlavaForConditionalGeneration.from_pretrained(model_name_or_path,
-    #                                                       device_map=device_map,
-    #                                                       quantization_config=quantization_config)
-
     model = LlavaForConditionalGeneration.from_pretrained(model_name_or_path,
-                                                          device_map=device_map)
+                                                          device_map=device_map,
+                                                          quantization_config=quantization_config)
+
+    # model = LlavaForConditionalGeneration.from_pretrained(model_name_or_path,
+    #                                                       device_map=device_map)
     
     processor = AutoProcessor.from_pretrained(model_name_or_path)
     tokenizer = processor.tokenizer
