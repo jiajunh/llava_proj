@@ -360,7 +360,7 @@ def st_patch_view(args):
 
                 vis_scale_option = st.selectbox(
                     "select one visualize scale method",
-                    options=["identical", "0.9 pow", "0.7 pow" "0.5 pow"],
+                    options=["identical", "0.9_pow", "0.7_pow", "0.5_pow"],
                 )
 
                 patch_atten_view_submitted = st.form_submit_button("attens view")
@@ -384,11 +384,11 @@ def st_patch_view(args):
                         patch_atten_view_temp = patch_atten_view_temp[st.session_state["image_start_idx"]:st.session_state["image_start_idx"]+args.ag.image_token_num].numpy()
                         
                         if (patch_idx > 0 and sum(patch_atten_view_temp) > 0):
-                            if vis_scale_option == "0.9 pow":
+                            if vis_scale_option == "0.9_pow":
                                 patch_atten_view_temp = patch_atten_view_temp ** (0.9)
-                            elif vis_scale_option == "0.7 pow":
+                            elif vis_scale_option == "0.7_pow":
                                 patch_atten_view_temp = patch_atten_view_temp ** (0.7)
-                            elif vis_scale_option == "0.5 pow":
+                            elif vis_scale_option == "0.5_pow":
                                 patch_atten_view_temp = patch_atten_view_temp ** (0.5)
                             patch_atten_view_temp = (patch_atten_view_temp - np.min(patch_atten_view_temp)) / (np.max(patch_atten_view_temp) - np.min(patch_atten_view_temp))
                         cached_patch_atten_view.append(patch_atten_view_temp)
