@@ -451,7 +451,7 @@ def st_patch_view(args):
 
                     patches.forEach((patch, index) => {{
                         if (index < hoveredPatchIndex) {{
-                            const opacity = minAlpha + (maxAlpha - inAlpha) * patchAttentionData[hoveredPatchIndex][index];
+                            const opacity = minAlpha + (maxAlpha - minAlpha) * patchAttentionData[hoveredPatchIndex][index];
                             patch.style.backgroundColor = `rgba(0, 255, 0, ${{opacity}})`;
                             patch.style.outline = ''; 
                         }} else if (index === hoveredPatchIndex) {{
