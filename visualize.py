@@ -381,7 +381,8 @@ def st_patch_view(args):
             get_base64_img(args, st.session_state["img_np"])
 
             patch_divs = ""
-            max_alpha = 0.9
+            max_alpha = 0.8
+            min_alpha = 0.05
 
             if "cached_patch_atten_view" not in st.session_state:
                 st.session_state["cached_patch_atten_view"] = [np.zeros(args.ag.image_token_num) for _ in range(args.ag.image_token_num)]
@@ -434,6 +435,7 @@ def st_patch_view(args):
                     const patches = document.querySelectorAll('.highlight-patch');
                     const patchAttentionData = {json.dumps(js_attention_data)}
                     const maxAlpha = {max_alpha};
+                    const minAlpha = {min_alpha};
 
                     let hoveredPatchIndex = -1;
 
@@ -449,7 +451,7 @@ def st_patch_view(args):
 
                     patches.forEach((patch, index) => {{
                         if (index < hoveredPatchIndex) {{
-                            const opacity = maxAlpha * patchAttentionData[hoveredPatchIndex][index];
+                            const opacity = minAlpha + (maxAlpha - inAlpha) * patchAttentionData[hoveredPatchIndex][index];
                             patch.style.backgroundColor = `rgba(0, 255, 0, ${{opacity}})`;
                             patch.style.outline = ''; 
                         }} else if (index === hoveredPatchIndex) {{
