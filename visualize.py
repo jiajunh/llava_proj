@@ -509,7 +509,9 @@ def st_patch_view(args):
                                     isClickMode = true;
                                 }}
                             }}
-                            applyPatchStyles(selectedPatchIndex);
+                            if (selectedPatchIndex != -1) {{
+                                applyPatchStyles(selectedPatchIndex);
+                            }}
                         }});
                     }}
 
