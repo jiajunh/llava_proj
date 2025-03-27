@@ -96,13 +96,6 @@ class AttentionGenerator:
 
     def sort_patch_index_for_token(self, image_atten,
                                    select_layer=-1, select_head=-1):
-        # output_token_idx = self.modified_token_idx_to_output_idx(token_idx)
-        # atten_weights = self.get_attention_scores(outputs, token_idx=output_token_idx)
-        # if prompt_agg:
-        #     agg_atten = self.aggregate_attention(atten_weights, agg="avg")
-        # else:
-        #     agg_atten = self.aggregate_attention(atten_weights, agg="head")
-        # _, image_atten = self.attention_maps(agg_atten, modified_token_ids)
 
         image_atten_for_token = image_atten[select_layer, select_head].reshape((1,1,-1))
         image_atten_for_token_prev_layer = image_atten[select_layer-1, select_head].reshape((1,1,-1))

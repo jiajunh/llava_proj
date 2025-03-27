@@ -457,34 +457,68 @@ def st_patch_view(args):
                     const minAlpha = {min_alpha};
 
                     let hoveredPatchIndex = -1;
+                    let selectedPatchIndex = -1;
+                    let isClickMode = false;
 
-                    patches.forEach((patch, index) => {{
-                        const rect = patch.getBoundingClientRect();
-                        const patchX = rect.left + rect.width / 2;
-                        const patchY = rect.top + rect.height / 2;
+                    function applyPatchStyles(selectedIndex) {{
+                        patches.forEach((patch, index) => {{
+                            if (index < selectedIndex) {{
+                                const opacity = minAlpha + (maxAlpha - minAlpha) * patchAttentionData[hoveredPatchIndex][index];
+                                patch.style.backgroundColor = `rgba(0, 255, 0, ${{opacity}})`;
+                                patch.style.outline = ''; 
+                            }} else if (index === selectedIndex) {{
+                                patch.style.backgroundColor = 'rgba(255, 0, 0, 0.5)';
+                                patch.style.outline = '2px solid rgba(255, 0, 0, 0.9)';
+                            }} else {{
+                                patch.style.backgroundColor = 'transparent'; 
+                                patch.style.outline = ''; 
+                            }}
+                        }});
+                    }}
 
-                        if (event.clientX >= rect.left && event.clientX <= rect.right && event.clientY >= rect.top && event.clientY <= rect.bottom) {{
-                            hoveredPatchIndex = index;
+                    function handleMouseMove(event) {{
+                        if (isClickMode) return;
+
+                        patches.forEach((patch, index) => {{
+                            const rect = patch.getBoundingClientRect();
+                            const patchX = rect.left + rect.width / 2;
+                            const patchY = rect.top + rect.height / 2;
+
+                            if (event.clientX >= rect.left && event.clientX <= rect.right && event.clientY >= rect.top && event.clientY <= rect.bottom) {{
+                                hoveredPatchIndex = index;
+                            }}
+                        }});
+
+                        if (hoveredPatchIndex !== -1) {{
+                            applyPatchStyles(hoveredPatchIndex);
                         }}
-                    }});
+                    }}
 
-                    patches.forEach((patch, index) => {{
-                        if (index < hoveredPatchIndex) {{
-                            const opacity = minAlpha + (maxAlpha - minAlpha) * patchAttentionData[hoveredPatchIndex][index];
-                            patch.style.backgroundColor = `rgba(0, 255, 0, ${{opacity}})`;
-                            patch.style.outline = ''; 
-                        }} else if (index === hoveredPatchIndex) {{
-                            patch.style.backgroundColor = 'rgba(255, 0, 0, 0.5)';
-                            patch.style.outline = '2px solid rgba(255, 0, 0, 0.9)';
-                        }} else {{
-                            patch.style.backgroundColor = 'transparent'; 
-                            patch.style.outline = ''; 
-                        }}
-                    }});
+
+                    function handlePatchClick(event) {{
+                        patches.forEach((patch, index) => {{
+                            const rect = patch.getBoundingClientRect();
+                            const patchX = rect.left + rect.width / 2;
+                            const patchY = rect.top + rect.height / 2;
+
+                            if (event.clientX >= rect.left && event.clientX <= rect.right && event.clientY >= rect.top && event.clientY <= rect.bottom) {{
+                                if (selectedPatchIndex === index) {{
+                                    isClickMode = !isClickMode;
+                                }} else {{
+                                    selectedPatchIndex = index;
+                                    isClickMode = true;
+                                }}
+                            }}
+                            applyPatchStyles(selectedPatchIndex);
+                        }});
+                    }}
+
+
+                    const imageContainer = document.querySelector('.image-container');
+                    imageContainer.addEventListener('mousemove', handleMouseMove);
+                    imageContainer.addEventListener('click', handlePatchClick);
                 }}
-
-                const imageContainer = document.querySelector('.image-container');
-                imageContainer.addEventListener('mousemove', adjustPatchOpacity);
+                adjustPatchOpacity();
                 </script>
             </body>
             </html>
