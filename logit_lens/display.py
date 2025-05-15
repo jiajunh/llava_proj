@@ -91,7 +91,7 @@ class LogitLensVisualizer:
         mask = torch.nn.functional.interpolate(mask, size=(height, width), mode="nearest").numpy()
         
         atten_map = mask[0]
-
+        cam = atten_map
         cam = (cam - np.min(cam)) / (np.max(cam) - np.min(cam))
         cam_img = np.uint8(255 * cam)    
         heatmap = [cv2.applyColorMap(cam_img_head, cv2.COLORMAP_HSV) for cam_img_head in cam_img]
