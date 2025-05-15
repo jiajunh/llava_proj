@@ -23,7 +23,7 @@ class LogitLensVisualizer:
                              n_splits=3,
                              use_resized_img=False,
                              text_color="yellow",
-                             text_fontsize=12):
+                             text_fontsize=10):
         if not isinstance(image, np.ndarray):
             image = np.asarray(image)
         
@@ -84,18 +84,28 @@ class LogitLensVisualizer:
         image = self.resize_image(image, (width//self.patch_size*self.patch_size, height//self.patch_size*self.patch_size))
         height, width, _ = image.shape
 
-        mask = mask.cpu().numpy().reshape((n_row, n_col))
+        # mask = mask.cpu().reshape((1, 1, n_row, n_col))
+        # mask = torch.nn.functional.interpolate(mask, size=(height, width), mode="nearest").numpy()
         
-        mask2 = np.repeat(mask, height // n_row , axis=0)
-        mask2 = np.repeat(mask2, width // n_col, axis=1)
-        
+        mask = mask.cpu().numpy().reshape((n_row, n_col)).astype(float)
+        seg_resized = (np.array(Image.fromarray(mask).resize((width, height), Image.BILINEAR)))
+
         fig, ax = plt.subplots(1)
-        ax.imshow(image, alpha=1.0)
-        colors = ["white", "yellow"]
-        cmap = plt.cm.colors.ListedColormap(colors)
-        ax.imshow(mask2*255, cmap=cmap, alpha=0.6)
+        ax.imshow(image)
+        ax.imshow(seg_resized, cmap='jet', interpolation='bilinear', alpha=.5)
         ax.set_axis_off()
 
-        plt.savefig(f"./plots/logit_lens_saliency_map.png")
-        print("*"*5, f"./plots/logit_lens_saliency_map.png saved!")
+        # mask2 = np.repeat(mask, height // n_row , axis=0)
+        # mask2 = np.repeat(mask2, width // n_col, axis=1)
+        
+        # fig, ax = plt.subplots(1)
+        # ax.imshow(image, alpha=1.0)
+        # colors = ["white", "yellow"]
+        # cmap = plt.cm.colors.ListedColormap(colors)
+        # ax.imshow(mask2*255, cmap=cmap, alpha=0.6)
+        # ax.set_axis_off()
+
+        # plt.savefig(f"./plots/logit_lens_saliency_map.png")
+        # print("*"*5, f"./plots/logit_lens_saliency_map.png saved!")
+
         return fig
