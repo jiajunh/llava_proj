@@ -18,7 +18,7 @@ def get_one_image(idx=-1,
     assert(idx >=- 1 and idx < data_size)
     if idx < 0:
         idx = random.randint(1, data_size)-1
-    # print(f"choose index {idx} from total {data_size} images")
+    print(f"choose index {idx} from total {data_size} images")
     img_path = image_path + image_files[idx]
     image = Image.open(img_path)
     np_image = np.asarray(image)

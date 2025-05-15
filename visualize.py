@@ -139,13 +139,13 @@ def st_logit_lens_container(args):
             if not "filtered_tokens" in st.session_state:
                 st.write("No data")
             else:
-                fig = args.lv.plot_tokens_on_image(image=st.session_state["img_np"], 
-                                             tokens=st.session_state["next_five_tokens"], 
-                                             show_full_image=False, 
-                                             part_idx=0,
-                                             n_splits=4,
-                                             use_resized_img=False,
-                                             text_fontsize=10)
+                fig = args.lv.plot_tokens_on_image(image=st.session_state["img_np"],
+                                                   tokens=st.session_state["next_five_tokens"], 
+                                                   show_full_image=False, 
+                                                   part_idx=0,
+                                                   n_splits=4,
+                                                   use_resized_img=False,
+                                                   text_fontsize=10)
                 st.pyplot(fig)
 
         with salicy_map_col:
@@ -608,11 +608,8 @@ def run_streamlit(args):
         # Analysis lots
         st_attention_analysis(args)
 
-
     st.markdown('##')
     st.markdown('##')
-    
-
     
 
 if __name__ == "__main__":
