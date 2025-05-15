@@ -91,24 +91,24 @@ class LogitLensVisualizer:
         mask = torch.nn.functional.interpolate(mask, size=(height, width), mode="nearest").numpy()
         
         atten_map = mask[0]
-        mul = 1.0
-        cam = atten_map
-        heads, height, width = atten_map.shape
-        cam = cam.reshape((heads, -1))
-        cam_min = np.min(cam, axis=1, keepdims=True)
-        cam_max = np.max(cam, axis=1, keepdims=True)
-        cam = (cam - cam_min) / (cam_max - cam_min)
-        cam = cam.reshape(atten_map.shape) * mul
+        # mul = 1.0
+        # cam = atten_map
+        # heads, height, width = atten_map.shape
+        # cam = cam.reshape((heads, -1))
+        # cam_min = np.min(cam, axis=1, keepdims=True)
+        # cam_max = np.max(cam, axis=1, keepdims=True)
+        # cam = (cam - cam_min) / (cam_max - cam_min)
+        # cam = cam.reshape(atten_map.shape) * mul
 
-        cam_img = np.uint8(255 * cam)    
-        heatmap = [cv2.applyColorMap(cam_img_head, cv2.COLORMAP_HSV) for cam_img_head in cam_img]
-        heatmap = np.array(heatmap)
-        heatmap = np.float32(heatmap)
+        # cam_img = np.uint8(255 * cam)    
+        # heatmap = [cv2.applyColorMap(cam_img_head, cv2.COLORMAP_HSV) for cam_img_head in cam_img]
+        # heatmap = np.array(heatmap)
+        # heatmap = np.float32(heatmap)
 
-        mixed_img = img * 0.5 + heatmap[0] * 0.5
+        # mixed_img = img * 0.5 + heatmap[0] * 0.5
 
         fig, ax = plt.subplots(1)
-        ax.imshow(mixed_img)
+        ax.imshow(mask[0])
         ax.set_axis_off()
 
 
