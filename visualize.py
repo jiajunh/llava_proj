@@ -595,18 +595,18 @@ def run_streamlit(args):
         # Logit lens part
         st_logit_lens_container(args)
 
-        # Attention maps
-        st_attention_maps(args)
+        # # Attention maps
+        # st_attention_maps(args)
 
-        # Patch Attention 
-        st_patch_attention(args)
+        # # Patch Attention 
+        # st_patch_attention(args)
 
     # Patch attention hover
     st_patch_view(args)
 
-    if not args.local_test:
-        # Analysis lots
-        st_attention_analysis(args)
+    # if not args.local_test:
+    #     # Analysis lots
+    #     st_attention_analysis(args)
 
     st.markdown('##')
     st.markdown('##')
