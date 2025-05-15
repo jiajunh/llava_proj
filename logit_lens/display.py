@@ -88,7 +88,7 @@ class LogitLensVisualizer:
         mask = mask.cpu().reshape((1, 1, n_row, n_col)).float()
         print(torch.sum(mask))
         mask = torch.nn.functional.interpolate(mask, size=(height, width), mode="nearest").numpy()
-        print(torch.sum(mask))
+        print(np.sum(mask))
 
         atten_map = mask[0]
         mul = 1.0
