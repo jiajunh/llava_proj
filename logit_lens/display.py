@@ -24,7 +24,7 @@ class LogitLensVisualizer:
                              n_splits=3,
                              use_resized_img=False,
                              text_color="yellow",
-                             text_fontsize=7):
+                             text_fontsize=5):
         if not isinstance(image, np.ndarray):
             image = np.asarray(image)
         
@@ -85,7 +85,7 @@ class LogitLensVisualizer:
         image = self.resize_image(image, (width//self.patch_size*self.patch_size, height//self.patch_size*self.patch_size))
         height, width, _ = image.shape
 
-        mask = mask.cpu().reshape((1, 1, n_row, n_col))
+        mask = mask.cpu().reshape((1, 1, n_row, n_col)).float()
         mask = torch.nn.functional.interpolate(mask, size=(height, width), mode="nearest").numpy()
         
         atten_map = mask[0]
