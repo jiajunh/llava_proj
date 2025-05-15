@@ -87,21 +87,33 @@ class LogitLensVisualizer:
         img = np.float32(img_np) / 255
         height, width, _ = img_np.shape
 
-        mask = mask.reshape((1, 1, 24, 24)).float()
-        mask = torch.nn.functional.interpolate(mask, size=(height, width), mode="nearest").numpy()
-        
-        atten_map = mask[0, 0]
-        print(np.min(atten_map[0,0]), np.max(atten_map[0,0]), np.mean(atten_map[0,0]))
-        binary_mask = (mask[0, 0] > 0.5).astype(np.uint8)
+        mask = mask.cpu().reshape((24, 24)).numpy()
+        mask2 = np.repeat(mask, height // 24 , axis=0)
+        mask2 = np.repeat(mask2, width // 24, axis=1)
+        print(img_np.shape, mask2.shape)
+
+        binary_mask = (mask2 > 0.5).astype(np.uint8)
         color_map = np.zeros((binary_mask.shape[0], binary_mask.shape[1], 3), dtype=np.uint8)
-        color_map[binary_mask == 0] = [255, 0, 0]
+        color_map[binary_mask == 0] = [0, 0, 255]
         color_map[binary_mask == 1] = [0, 255, 0]
 
-        print(np.min(color_map[:,:,0]), np.max(color_map[:,:,0]), np.mean(color_map[:,:,0]))
-        print(np.min(color_map[:,:,1]), np.max(color_map[:,:,1]), np.mean(color_map[:,:,1]))
-        print(np.min(color_map[:,:,2]), np.max(color_map[:,:,2]), np.mean(color_map[:,:,2]))
-
         heatmap = np.float32(color_map) / 255
+
+        # mask = mask.reshape((1, 1, 24, 24)).float()
+        # mask = torch.nn.functional.interpolate(mask, size=(height, width), mode="nearest").numpy()
+        
+        # atten_map = mask[0, 0]
+        # print(np.min(atten_map[0,0]), np.max(atten_map[0,0]), np.mean(atten_map[0,0]))
+        # binary_mask = (mask[0, 0] > 0.5).astype(np.uint8)
+        # color_map = np.zeros((binary_mask.shape[0], binary_mask.shape[1], 3), dtype=np.uint8)
+        # color_map[binary_mask == 0] = [255, 0, 0]
+        # color_map[binary_mask == 1] = [0, 255, 0]
+
+        # print(np.min(color_map[:,:,0]), np.max(color_map[:,:,0]), np.mean(color_map[:,:,0]))
+        # print(np.min(color_map[:,:,1]), np.max(color_map[:,:,1]), np.mean(color_map[:,:,1]))
+        # print(np.min(color_map[:,:,2]), np.max(color_map[:,:,2]), np.mean(color_map[:,:,2]))
+
+        # heatmap = np.float32(color_map) / 255
 
         mixed_img = img * 0.5 + heatmap[0] * 0.5
 
