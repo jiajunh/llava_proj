@@ -87,7 +87,7 @@ class LogitLensVisualizer:
         img = np.float32(img_np) / 255
         height, width, _ = img_np.shape
 
-        mask = mask.reshape((1, 1, 24, 24))
+        mask = mask.reshape((1, 1, 24, 24)).float()
         mask = torch.nn.functional.interpolate(mask, size=(height, width), mode="nearest").numpy()
         
         atten_map = mask[0]
