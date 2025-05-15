@@ -91,27 +91,13 @@ class LogitLensVisualizer:
         mask = torch.nn.functional.interpolate(mask, size=(height, width), mode="nearest").numpy()
         
         atten_map = mask[0, 0]
-        cam = atten_map
-        cam = (cam - np.min(cam)) / (np.max(cam) - np.min(cam) + 1e-8)
-        print(np.min(cam), np.max(cam), np.mean(cam))
-        cam_img = np.uint8(255 * cam)
-        print(np.min(cam_img), np.max(cam_img), np.mean(cam_img))
-        heatmap = cv2.applyColorMap(cam_img, cv2.COLORMAP_HSV)
-        heatmap = np.float32(heatmap) / 255
 
-        print(np.min(heatmap[:,:,0]), np.max(heatmap[:,:,0]), np.mean(heatmap[:,:,0]))
-        print(np.min(heatmap[:,:,1]), np.max(heatmap[:,:,1]), np.mean(heatmap[:,:,1]))
-        print(np.min(heatmap[:,:,2]), np.max(heatmap[:,:,2]), np.mean(heatmap[:,:,2]))
+        binary_mask = (mask[0, 0] > 0.5).astype(np.uint8)
+        color_map = np.zeros((binary_mask.shape[0], binary_mask.shape[1], 3), dtype=np.uint8)
+        color_map[binary_mask == 0] = [255, 0, 0]
+        color_map[binary_mask == 1] = [0, 255, 0]
 
-        # mul = 1.0
-        # cam = atten_map
-        # heads, height, width = atten_map.shape
-        # cam = cam.reshape((heads, -1))
-        # cam_min = np.min(cam, axis=1, keepdims=True)
-        # cam_max = np.max(cam, axis=1, keepdims=True)
-        # cam = (cam - cam_min) / (cam_max - cam_min)
-        # cam = cam.reshape(atten_map.shape) * mul
-
+        heatmap = np.float32(color_map) / 255
 
         mixed_img = img * 0.5 + heatmap[0] * 0.5
 
