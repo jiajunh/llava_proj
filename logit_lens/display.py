@@ -93,9 +93,9 @@ class LogitLensVisualizer:
         atten_map = mask[0]
         cam = atten_map
         cam = (cam - np.min(cam)) / (np.max(cam) - np.min(cam))
-        print(np.min(cam), np.max(cam), np.meam(cam))
+        print(np.min(cam), np.max(cam), np.mean(cam))
         cam_img = np.uint8(255 * cam)
-        print(np.min(cam_img), np.max(cam_img), np.meam(cam_img))
+        print(np.min(cam_img), np.max(cam_img), np.mean(cam_img))
         print(cam_img.shape)
         heatmap = [cv2.applyColorMap(cam_img_head, cv2.COLORMAP_HSV) for cam_img_head in cam_img]
         heatmap = np.array(heatmap)
