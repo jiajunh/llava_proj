@@ -99,9 +99,9 @@ class LogitLensVisualizer:
         heatmap = cv2.applyColorMap(cam_img, cv2.COLORMAP_HSV)
         heatmap = np.float32(heatmap) / 255
 
-        print(np.min(heatmap[0,:,:,0]), np.max(heatmap[0,:,:,0]), np.mean(heatmap[0,:,:,0]))
-        print(np.min(heatmap[0,:,:,1]), np.max(heatmap[0,:,:,1]), np.mean(heatmap[0,:,:,1]))
-        print(np.min(heatmap[0,:,:,2]), np.max(heatmap[0,:,:,2]), np.mean(heatmap[0,:,:,2]))
+        print(np.min(heatmap[:,:,0]), np.max(heatmap[:,:,0]), np.mean(heatmap[:,:,0]))
+        print(np.min(heatmap[:,:,1]), np.max(heatmap[:,:,1]), np.mean(heatmap[:,:,1]))
+        print(np.min(heatmap[:,:,2]), np.max(heatmap[:,:,2]), np.mean(heatmap[:,:,2]))
 
         # mul = 1.0
         # cam = atten_map
