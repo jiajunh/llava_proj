@@ -104,12 +104,12 @@ class LogitLensVisualizer:
         heatmap = np.float32(heatmap) / 255
 
         print(np.max(heatmap), np.min(heatmap), np.max(image), np.min(image))
-        print(heatmap)
+        print(type(heatmap), type(image))
 
         mixed_img = image * 0.5 + heatmap[0] * 0.5
 
         fig, ax = plt.subplots(1)
-        ax.imshow(heatmap)
+        ax.imshow(heatmap[0])
         ax.set_axis_off()
 
         # mask = mask.cpu().numpy().reshape((n_row, n_col)).astype(float)
