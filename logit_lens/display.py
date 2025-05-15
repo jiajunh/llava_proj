@@ -1,3 +1,4 @@
+import cv2
 import torch
 import numpy as np
 import matplotlib.pyplot as plt
@@ -23,7 +24,7 @@ class LogitLensVisualizer:
                              n_splits=3,
                              use_resized_img=False,
                              text_color="yellow",
-                             text_fontsize=10):
+                             text_fontsize=7):
         if not isinstance(image, np.ndarray):
             image = np.asarray(image)
         
@@ -84,16 +85,32 @@ class LogitLensVisualizer:
         image = self.resize_image(image, (width//self.patch_size*self.patch_size, height//self.patch_size*self.patch_size))
         height, width, _ = image.shape
 
-        # mask = mask.cpu().reshape((1, 1, n_row, n_col))
-        # mask = torch.nn.functional.interpolate(mask, size=(height, width), mode="nearest").numpy()
+        mask = mask.cpu().reshape((1, 1, n_row, n_col))
+        mask = torch.nn.functional.interpolate(mask, size=(height, width), mode="nearest").numpy()
         
-        mask = mask.cpu().numpy().reshape((n_row, n_col)).astype(float)
-        seg_resized = (np.array(Image.fromarray(mask).resize((width, height), Image.BILINEAR)))
+        atten_map = mask[0]
+        mul = 1.2
+        cam = atten_map
+        heads, height, width = atten_map.shape
+        cam = cam.reshape((heads, -1))
+        cam_min = np.min(cam, axis=1, keepdims=True)
+        cam_max = np.max(cam, axis=1, keepdims=True)
+        cam = (cam - cam_min) / (cam_max - cam_min)
+        cam = cam.reshape(atten_map.shape) * mul
+
+        cam_img = np.uint8(255 * cam)    
+        heatmap = [cv2.applyColorMap(cam_img_head, cv2.COLORMAP_HSV) for cam_img_head in cam_img]
+        heatmap = np.array(heatmap)
+        heatmap = np.float32(heatmap) / 255
+
+        mixed_img = image * 0.5 + heatmap[0] * 0.5
 
         fig, ax = plt.subplots(1)
-        ax.imshow(image)
-        ax.imshow(seg_resized, cmap='jet', interpolation='bilinear', alpha=.5)
+        ax.imshow(mixed_img)
         ax.set_axis_off()
+
+        # mask = mask.cpu().numpy().reshape((n_row, n_col)).astype(float)
+        # seg_resized = (np.array(Image.fromarray(mask).resize((width, height), Image.BILINEAR)))
 
         # mask2 = np.repeat(mask, height // n_row , axis=0)
         # mask2 = np.repeat(mask2, width // n_col, axis=1)
