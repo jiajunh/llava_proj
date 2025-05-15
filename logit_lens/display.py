@@ -78,18 +78,18 @@ class LogitLensVisualizer:
         print("*"*5, f"./plots/tokens_on_image_{part_idx}_{n_splits}.png saved!")
         return fig
 
+
     def plot_saliency_map(self, image, mask):
-        height, width, _ = image.shape
-        n_row = self.image_size // self.patch_size
-        n_col = self.image_size // self.patch_size
-        image = self.resize_image(image, (width//self.patch_size*self.patch_size, height//self.patch_size*self.patch_size))
-        height, width, _ = image.shape
 
-        mask = mask.cpu().reshape((1, 1, n_row, n_col)).float()
-        print(torch.mean(mask))
+        img_np = np.asarray(image)
+        height, width, _ = img_np.shape
+        img_np = self.resize_image(img_np, (width // 24 * 24, height // 24 * 24))
+        img = np.float32(img_np) / 255
+        height, width, _ = img_np.shape
+
+        mask = mask.reshape((1, 1, 24, 24))
         mask = torch.nn.functional.interpolate(mask, size=(height, width), mode="nearest").numpy()
-        print(np.mean(mask))
-
+        
         atten_map = mask[0]
         mul = 1.0
         cam = atten_map
@@ -105,16 +105,46 @@ class LogitLensVisualizer:
         heatmap = np.array(heatmap)
         heatmap = np.float32(heatmap)
 
-        print(np.max(heatmap), np.min(heatmap), np.mean(heatmap), np.max(image), np.min(image), np.mean(image))
-        print(type(heatmap), type(image))
-
-        mixed_img = np.uint8(image * 0.5 + heatmap[0] * 0.5)
-
-        print(np.max(mixed_img), np.min(mixed_img), np.mean(mixed_img))
+        mixed_img = img * 0.5 + heatmap[0] * 0.5
 
         fig, ax = plt.subplots(1)
         ax.imshow(mixed_img)
         ax.set_axis_off()
+
+
+
+        # height, width, _ = image.shape
+        # n_row = self.image_size // self.patch_size
+        # n_col = self.image_size // self.patch_size
+        # image = self.resize_image(image, (width//self.patch_size*self.patch_size, height//self.patch_size*self.patch_size))
+        # height, width, _ = image.shape
+
+        # mask = mask.cpu().reshape((1, 1, n_row, n_col)).float()
+        # print(torch.mean(mask))
+        # mask = torch.nn.functional.interpolate(mask, size=(height, width), mode="nearest").numpy()
+        # print(np.mean(mask))
+
+        # atten_map = mask[0]
+        # mul = 1.0
+        # cam = atten_map
+        # heads, height, width = atten_map.shape
+        # cam = cam.reshape((heads, -1))
+        # cam_min = np.min(cam, axis=1, keepdims=True)
+        # cam_max = np.max(cam, axis=1, keepdims=True)
+        # cam = (cam - cam_min) / (cam_max - cam_min)
+        # cam = cam.reshape(atten_map.shape) * mul
+
+        # cam_img = np.uint8(255 * cam)    
+        # heatmap = [cv2.applyColorMap(cam_img_head, cv2.COLORMAP_HSV) for cam_img_head in cam_img]
+        # heatmap = np.array(heatmap)
+        # heatmap = np.float32(heatmap)
+
+        # print(np.max(heatmap), np.min(heatmap), np.mean(heatmap), np.max(image), np.min(image), np.mean(image))
+        # print(type(heatmap), type(image))
+
+        # mixed_img = np.uint8(image * 0.5 + heatmap[0] * 0.5)
+
+
 
         # mask = mask.cpu().numpy().reshape((n_row, n_col)).astype(float)
         # seg_resized = (np.array(Image.fromarray(mask).resize((width, height), Image.BILINEAR)))
