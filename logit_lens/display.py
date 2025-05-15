@@ -88,9 +88,11 @@ class LogitLensVisualizer:
         height, width, _ = img_np.shape
 
         mask = mask.cpu().reshape((24, 24)).numpy()
+        print(mask)
         mask2 = np.repeat(mask, height // 24 , axis=0)
         mask2 = np.repeat(mask2, width // 24, axis=1)
         print(img_np.shape, mask2.shape)
+        print(np.mean(mask2), np.mean(mask))
 
         binary_mask = (mask2 > 0.5).astype(np.uint8)
         color_map = np.zeros((binary_mask.shape[0], binary_mask.shape[1], 3), dtype=np.uint8)
