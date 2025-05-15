@@ -86,10 +86,10 @@ class LogitLensVisualizer:
         height, width, _ = image.shape
 
         mask = mask.cpu().reshape((1, 1, n_row, n_col)).float()
-        print(mask)
+        print(torch.sum(mask))
         mask = torch.nn.functional.interpolate(mask, size=(height, width), mode="nearest").numpy()
-        print(mask)
-        
+        print(torch.sum(mask))
+
         atten_map = mask[0]
         mul = 1.0
         cam = atten_map
@@ -103,12 +103,12 @@ class LogitLensVisualizer:
         cam_img = np.uint8(255 * cam)    
         heatmap = [cv2.applyColorMap(cam_img_head, cv2.COLORMAP_HSV) for cam_img_head in cam_img]
         heatmap = np.array(heatmap)
-        heatmap = np.float32(heatmap) / 255
+        heatmap = np.float32(heatmap)
 
         print(np.max(heatmap), np.min(heatmap), np.max(image), np.min(image))
         print(type(heatmap), type(image))
 
-        mixed_img = image * 0.5 + heatmap[0] * 0.5
+        mixed_img = np.uint8(image * 0.5 + heatmap[0] * 0.5)
 
         print(np.max(mixed_img), np.min(mixed_img))
 
